@@ -10,3 +10,4 @@ build/
 .venv/
 *.log
 node_modules/
+nul
