@@ -1,3 +1,11 @@
+"""
+Train Cubist model on historical data and generate SSP5-8.5 yield predictions.
+
+Predictions are clipped to each province's historical observed range to
+prevent extrapolation artifacts (Lobell & Burke, 2010; Challinor et al., 2014).
+
+See ../feature_methods.py for detailed methodology and references.
+"""
 import os
 import pandas as pd
 import numpy as np
@@ -76,6 +84,7 @@ create_obs_vs_pred_plot(y_train, y_train_pred, "Cubist")
 future_preds = model.predict(X_future)
 
 # Clip predictions per province to historical observed range (prevent extrapolation artifacts)
+# See feature_methods.clip_predictions() — Lobell & Burke (2010), Challinor et al. (2014)
 hist_province_bounds = hist_df.groupby('province')['yield'].agg(['min', 'max'])
 future_df['yield_raw'] = future_preds
 future_df['yield'] = future_preds

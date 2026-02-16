@@ -1,3 +1,14 @@
+"""
+Merge historical climate features with SSP5-8.5 projections for 2025-2034.
+
+This script constructs future climate feature sets by combining CMIP6 SSP
+projections (tmp, pre) with historical province-level baselines using the
+delta change method. Temperature-dependent features (tmx, tmn, dtr, vpd, pet)
+are adjusted for physical consistency.
+
+See ../feature_methods.py for detailed documentation of each feature's
+computation method and supporting references.
+"""
 import os
 import numpy as np
 import pandas as pd
@@ -43,22 +54,38 @@ merged = merged.merge(
 )
 
 # Step 4: Apply SSP values with physical consistency adjustments
-# --- Temperature: shift tmx and tmn by the same delta as tmp ---
+# See ../feature_methods.py for detailed methodology and references.
+
+# --- tmp, pre: direct from CMIP6 SSP projections ---
+# See feature_methods.compute_tmp(), feature_methods.compute_pre()
 tmp_delta = merged['tmp_ssp'] - merged['tmp_hist']
 merged['tmp'] = merged['tmp_ssp']
 merged['pre'] = merged['pre_ssp']
+
+# --- tmx, tmn: delta change method (Hay et al., 2000; Anandhi et al., 2011) ---
+# See feature_methods.compute_tmx(), feature_methods.compute_tmn()
 merged['tmx'] = merged['tmx'] + tmp_delta
 merged['tmn'] = merged['tmn'] + tmp_delta
+
+# --- dtr: derived from adjusted tmx and tmn ---
+# See feature_methods.compute_dtr()
 merged['dtr'] = merged['tmx'] - merged['tmn']
 
-# --- VPD: recalculate from new temperature ---
-# Tetens formula: es = 0.6108 * exp(17.27*T / (T+237.3))
+# --- vpd: scaled using Tetens equation (Tetens, 1930; Allen et al., 1998) ---
+# Rising VPD drives crop water stress (Grossiord et al., 2020; Yuan et al., 2019)
+# See feature_methods.compute_vpd()
 es_new = 0.6108 * np.exp(17.27 * merged['tmp'] / (merged['tmp'] + 237.3))
 es_hist = 0.6108 * np.exp(17.27 * merged['tmp_hist'] / (merged['tmp_hist'] + 237.3))
 merged['vpd'] = merged['vpd'] * (es_new / es_hist)
 
-# --- PET: scale with temperature change ---
+# --- pet: scaled with saturation vapor pressure ratio (Allen et al., 1998) ---
+# See feature_methods.compute_pet()
 merged['pet'] = merged['pet'] * (es_new / es_hist)
+
+# --- cld, wet, vap, aet, def, PDSI, q, soil, srad, ws: historical averages ---
+# These features are held at province-level historical means (2010-2024).
+# CMIP6 SSP projections were not available for these variables.
+# See feature_methods.py for individual feature documentation.
 
 # Clean up temp columns
 merged = merged.drop(columns=['tmp_hist', 'tmp_ssp', 'pre_hist', 'pre_ssp'])
