@@ -25,7 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 TRAINING_DATA = PROJECT_ROOT / "Training" / "data" / "banana_yield_2010-2024.xlsx"
 TRAINING_PLOTS = PROJECT_ROOT / "Training" / "plots"
 MAPPING_DIR = PROJECT_ROOT / "Mapping"
-MAPPING_CSV = MAPPING_DIR / "banana_yield_2010-2024.csv"
+MAPPING_CSV = MAPPING_DIR / "banana_yield_2010-2024.xlsx"
 GEOJSON_PATH = MAPPING_DIR / "philippines_provinces.geojson"
 SSP245_DIR = PROJECT_ROOT / "SSPs Data collection" / "SSP2-4.5"
 SSP585_DIR = PROJECT_ROOT / "SSPs Data collection" / "SSP5-8.5"
@@ -146,9 +146,9 @@ def get_geojson():
 def get_yield_by_province():
     """Return average yield per province for choropleth mapping."""
     if not MAPPING_CSV.exists():
-        raise HTTPException(404, "Mapping CSV not found")
+        raise HTTPException(404, "Mapping data file not found")
     import re
-    df = pd.read_csv(MAPPING_CSV)
+    df = pd.read_excel(MAPPING_CSV)
     df.rename(columns={"Geolocation": "province"}, inplace=True)
     df["province"] = df["province"].apply(
         lambda x: re.sub(r"^\.*\s*", "", str(x))

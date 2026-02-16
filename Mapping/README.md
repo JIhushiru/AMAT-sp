@@ -18,7 +18,7 @@ python luzviminda.py   # Generates 3 regional maps
 
 ## Data
 
-- `banana_yield_2010-2024.csv` - Yield data per province (from PSA/CountrySTAT)
+- `banana_yield_2010-2024.xlsx` - Yield data per province (from PSA/CountrySTAT)
 - `philippines_provinces.geojson` - Province boundaries
 - `gadm_data/` - GADM shapefiles (auto-downloaded on first run from geodata.ucdavis.edu)
 

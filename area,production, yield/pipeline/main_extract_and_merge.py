@@ -21,7 +21,7 @@ END_YEAR = 2024
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 geojson_path = os.path.join(script_dir, "philippines_provinces.geojson")
-yield_path = os.path.join(script_dir, "actual_banana_yield_2010-2024.csv")
+yield_path = os.path.join(script_dir, "banana_yield_2010-2024.xlsx")
 
 # === Load GeoJSON ===
 gdf = gpd.read_file(geojson_path)
@@ -171,7 +171,7 @@ for feat in features[1:]:
     )
 
 # === Load & Clean Yield Data ===
-raw_yield = pd.read_csv(yield_path)
+raw_yield = pd.read_excel(yield_path)
 
 # Filter province-level rows (start with exactly 4 dots)
 prov_yield = raw_yield[raw_yield["Geolocation"].str.startswith("....")].copy()

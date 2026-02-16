@@ -36,7 +36,7 @@ def download_and_load_gadm_data():
 
 
 def process_and_plot(csv_file, provinces_gdf):
-    df = pd.read_csv(csv_file)
+    df = pd.read_excel(csv_file)
 
     df.rename(columns={"Geolocation": "province"}, inplace=True)
     df["province"] = df["province"].apply(lambda x: re.sub(r"^\.*\s*", "", str(x))).str.strip().str.title()
@@ -162,7 +162,7 @@ def process_and_plot(csv_file, provinces_gdf):
 
 if __name__ == "__main__":
     provinces_gdf = download_and_load_gadm_data()
-    csv_file = os.path.join(SCRIPT_DIR, "banana_yield_2010-2024.csv")
+    csv_file = os.path.join(SCRIPT_DIR, "banana_yield_2010-2024.xlsx")
 
     if os.path.exists(csv_file):
         process_and_plot(csv_file, provinces_gdf)

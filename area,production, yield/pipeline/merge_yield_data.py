@@ -13,12 +13,12 @@ def main():
     current_dir = os.getcwd()
 
     # Define file paths
-    yield_file = os.path.join(current_dir, "banana_yield_2010-2024.csv")
+    yield_file = os.path.join(current_dir, "banana_yield_2010-2024.xlsx")
     data_file = os.path.join(current_dir, "banana_2010-2023.csv")
     output_file = os.path.join(current_dir, "banana_2010-2023_updated.csv")
 
     # Read the yield data (horizontal format)
-    yield_df = pd.read_csv(yield_file)
+    yield_df = pd.read_excel(yield_file)
 
     # Read the main data file (vertical format)
     data_df = pd.read_csv(data_file)
