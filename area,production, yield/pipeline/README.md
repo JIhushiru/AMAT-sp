@@ -38,9 +38,9 @@ A GeoJSON file (`philippines_provinces.geojson`) containing polygon geometries f
 
 ## How the Pipeline Works
 
-### Step 1: Extract Climate Features per Province (`extract_climate_features.py`)
+### Main Script: Extract Climate Features and Merge with Yield (`main_extract_and_merge.py`)
 
-This is the main script. For each climate variable, it:
+This script does the entire pipeline end-to-end. For each climate variable, it:
 
 1. Opens the corresponding CRU NetCDF file and subsets it to the study period (2010-2023).
 2. For each province, clips the gridded climate data to the province polygon using `rioxarray`.
@@ -52,17 +52,16 @@ After processing all variables, the script merges them into a single dataframe k
 
 It then loads the PSA crop data CSV, filters to province-level rows, reshapes it from wide to long format, and joins it with the climate features on (province, year) to produce the final output: `province_year_climate_features_and_yield.csv`.
 
-### Step 2 (optional): Update Yield Values (`merge_yield_data.py`)
+### Helper: Update Yield Values (`merge_yield_data.py`)
 
 A simpler utility script that maps yield values from a wide-format PSA CSV into an existing long-format dataset. This was used when yield data needed to be updated separately from the climate features (e.g., when newer PSA data became available).
 
-### Step 3 (optional): Visualize Area Harvested (`plot_area_harvested.py`)
+### Helper: Visualize Area Harvested (`plot_area_harvested.py`)
 
 Generates a time-series plot of national-level banana area harvested from 2010 to 2024, including the mean line and overall trend.
 
 ## Other Files
 
-- `extract_climate_features_v1.py` -- An earlier version of the climate extraction script (included 10 features, with `frs` for frost days). Kept for reference.
 - `centroid_fallback_log.txt` -- Log of which provinces used the centroid fallback method for each climate variable. Useful for verifying spatial coverage.
 
 ## Output
