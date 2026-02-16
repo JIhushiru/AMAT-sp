@@ -1,5 +1,8 @@
 """
-Train Cubist model on historical data and generate SSP5-8.5 yield predictions.
+Load the best saved model and generate SSP5-8.5 yield predictions.
+
+Instead of retraining, this script loads the best model selected by
+train_models.py (Pipeline/saved_model/best_model.joblib).
 
 Predictions are clipped to each province's historical observed range to
 prevent extrapolation artifacts (Lobell & Burke, 2010; Challinor et al., 2014).
@@ -7,44 +10,55 @@ prevent extrapolation artifacts (Lobell & Burke, 2010; Challinor et al., 2014).
 See ../feature_methods.py for detailed methodology and references.
 """
 import os
+import joblib
 import pandas as pd
 import numpy as np
-from cubist import Cubist
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, '..', 'data')
+model_dir = os.path.join(base_dir, '..', 'saved_model')
 
-# Load historical data
+# ── Load saved model ──────────────────────────────────────────────────────
+model_path = os.path.join(model_dir, 'best_model.joblib')
+if not os.path.exists(model_path):
+    raise FileNotFoundError(
+        f"No saved model found at {model_path}.\n"
+        "Run train_models.py first: python Pipeline/train_models.py"
+    )
+
+saved = joblib.load(model_path)
+model = saved['model']
+scaler = saved['scaler']
+features = saved['features']
+model_name = saved['model_name']
+
+print(f"Loaded model: {model_name}")
+print(f"  CV R²:    {saved['cv_r2']:.4f}")
+print(f"  Train R²: {saved['train_r2']:.4f}")
+print(f"  Features: {features}")
+
+# ── Load data ─────────────────────────────────────────────────────────────
 hist_df = pd.read_excel(os.path.join(data_dir, 'banana_yield_2010-2024.xlsx'))
 hist_df = hist_df[pd.to_numeric(hist_df['yield'], errors='coerce').notnull()]
 hist_df['yield'] = hist_df['yield'].astype(float)
 
-# Load future data (from merge_data.py output)
 future_df = pd.read_csv(os.path.join(base_dir, 'merged_future_data.csv'))
-print("Historical columns:", hist_df.columns.tolist())
 
-# Same 10 features used by the original Cubist model
-features = ['cld', 'tmp', 'pre', 'aet', 'PDSI', 'q', 'soil', 'srad', 'vpd', 'ws']
-
+# ── Evaluate on training data (using the saved scaler) ────────────────────
 X_train = hist_df[features]
 y_train = hist_df['yield']
-X_future = future_df[features]
+X_train_scaled = pd.DataFrame(scaler.transform(X_train), columns=features)
 
-# Train Cubist model
-model = Cubist(n_committees=20, neighbors=2, n_rules=200)
-model.fit(X_train, y_train)
-
-# Evaluate on training data
-y_train_pred = model.predict(X_train)
+y_train_pred = model.predict(X_train_scaled)
 r2 = r2_score(y_train, y_train_pred)
 mae = mean_absolute_error(y_train, y_train_pred)
 mse = mean_squared_error(y_train, y_train_pred)
 rmse = np.sqrt(mse)
 mape = np.mean(np.abs((y_train - y_train_pred) / y_train)) * 100
 
-print("=== Cubist Model Performance on Training Data ===")
+print(f"\n=== {model_name} Performance on Training Data ===")
 print(f"R2 Score : {r2:.4f}")
 print(f"RMSE     : {rmse:.4f}")
 print(f"MSE      : {mse:.4f}")
@@ -52,7 +66,7 @@ print(f"MAE      : {mae:.4f}")
 print(f"MAPE     : {mape:.2f}%")
 
 
-def create_obs_vs_pred_plot(y_true, y_pred, model_name="Cubist"):
+def create_obs_vs_pred_plot(y_true, y_pred):
     plt.figure(figsize=(8, 8))
     plt.scatter(y_true, y_pred, alpha=0.6, s=50, color='blue')
     min_val = min(min(y_true), min(y_pred))
@@ -78,10 +92,12 @@ def create_obs_vs_pred_plot(y_true, y_pred, model_name="Cubist"):
     print(f"Observed vs predicted plot saved to: {plot_path}")
 
 
-create_obs_vs_pred_plot(y_train, y_train_pred, "Cubist")
+create_obs_vs_pred_plot(y_train, y_train_pred)
 
-# === FUTURE PREDICTIONS ===
-future_preds = model.predict(X_future)
+# ── Future predictions ────────────────────────────────────────────────────
+X_future = future_df[features]
+X_future_scaled = pd.DataFrame(scaler.transform(X_future), columns=features)
+future_preds = model.predict(X_future_scaled)
 
 # Clip predictions per province to historical observed range (prevent extrapolation artifacts)
 # See feature_methods.clip_predictions() — Lobell & Burke (2010), Challinor et al. (2014)
