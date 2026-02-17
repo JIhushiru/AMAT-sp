@@ -25,8 +25,9 @@ def feature_selection_workflow(X, y, vif_threshold=5.0):
     print(f"---- After VIF filtering: {len(filtered_features)} features remaining")
 
     model = RandomForestRegressor(n_jobs=-1, random_state=42)
-    selector = BorutaPy(model, n_estimators=1000, max_iter=50, perc=90, alpha=0.05, two_step=False, verbose=0)
+    selector = BorutaPy(model, n_estimators=1000, max_iter=50, perc=90, alpha=0.05, two_step=False, verbose=2)
 
+    print(f"---- Running Boruta (1000 estimators, up to 50 iterations)... this may take a few minutes", flush=True)
     y_np = y.to_numpy() if isinstance(y, pd.Series) else np.array(y)
     selector.fit(X_filtered.values, y_np)
 
