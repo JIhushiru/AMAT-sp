@@ -7,6 +7,7 @@ optional feature selection (VIF + Boruta) and TimeSeriesSplit cross-validation.
 import os
 import time
 
+import joblib
 import matplotlib
 matplotlib.use('Agg')
 import pandas as pd
@@ -47,6 +48,52 @@ MODEL_PARAMS = {
     'SVM': get_svm_params,
     'XGB': get_xgb_params,
 }
+
+
+def save_top_models(results, data, n_top=3):
+    """Retrain and save the top N models on the full dataset with their best params."""
+    X = data.drop(columns=["yield", "province", "year"])
+    y = data["yield"]
+    non_zero = (X != 0).any(axis=1)
+    X, y = X[non_zero], y[non_zero]
+    features = list(X.columns)
+
+    # Rank all models by CV R²
+    model_scores = []
+    for model_type, model_data in results.items():
+        for model_name, metrics in model_data.items():
+            model_scores.append((model_name, metrics['best_avg_r2'], metrics['best_params']))
+    model_scores.sort(key=lambda x: x[1], reverse=True)
+    top_n = model_scores[:n_top]
+
+    print(f"\n{'='*50}")
+    print(f"Top {n_top} Models by CV R²:")
+    for rank, (name, r2, _) in enumerate(top_n, 1):
+        print(f"  {rank}. {name}: {r2:.4f}")
+    print(f"{'='*50}")
+
+    save_dir = os.path.join('Models', 'top3')
+    os.makedirs(save_dir, exist_ok=True)
+
+    scaler = StandardScaler()
+    X_scaled = pd.DataFrame(scaler.fit_transform(X), columns=features)
+
+    for rank, (name, r2, params) in enumerate(top_n, 1):
+        print(f"\nRetraining {name} (rank #{rank}) on full dataset...")
+        train_func = MODEL_FUNCTIONS[name]
+        model, _ = train_func(X_scaled, X_scaled, y, y, params)
+
+        artifact = {
+            'model': model,
+            'scaler': scaler,
+            'selected_features': features,
+            'best_params': params,
+            'cv_avg_r2': r2,
+            'rank': rank,
+        }
+        path = os.path.join(save_dir, f'rank{rank}_{name}.joblib')
+        joblib.dump(artifact, path)
+        print(f"  Saved: {path}")
 
 
 def load_data(file_name, sheet_name="Sheet1"):
@@ -209,4 +256,5 @@ if __name__ == "__main__":
         performance_df = visualize_model_performance(results, False)
         save_results_to_word(results, None, "model_results_without_fs.docx")
 
+    save_top_models(results, data, n_top=3)
     print(f"Overall Execution Time: {time.time() - start_time:.2f} seconds")
