@@ -1,10 +1,23 @@
 """
-Extract CMIP6 climate projections directly from GEE to CSV.
+Extract CMIP6 climate projections from a 5-model ensemble via GEE.
 
-Queries NASA/GDDP-CMIP6 for 7 variables, computes annual province-level
-values using centroid point sampling in batches of 20.
+Queries NASA/GDDP-CMIP6 for 7 variables across 5 GCMs, computes annual
+province-level values using centroid point sampling in batches of 20.
 
-Centroids are computed client-side from GeoJSON to avoid server-side overhead.
+Multi-model ensemble following IPCC AR6 guidance (IPCC, 2021) and
+Tebaldi & Knutti (2007). Individual GCM outputs are saved separately
+for per-model bias correction before ensemble aggregation.
+
+Models selected for tropical/Southeast Asian performance:
+  - GFDL-ESM4:     Good general tropical performance
+  - MIROC6:        Strong tropical climate representation
+  - MRI-ESM2-0:    Well-validated for Asian monsoon regions
+  - IPSL-CM6A-LR:  Good precipitation representation
+  - CanESM5:       High climate sensitivity (provides ensemble spread)
+
+References:
+  - Tebaldi & Knutti (2007), Phil. Trans. R. Soc. A, doi:10.1098/rsta.2007.2076
+  - IPCC (2021), AR6 WG1 Chapter 4: Future Global Climate
 """
 import os
 import json
@@ -49,17 +62,31 @@ rename_map = {
     'rsds': 'srad', 'sfcWind': 'ws', 'hurs': 'hurs',
 }
 
-MODEL = "GFDL-ESM4"
+MODELS = ["GFDL-ESM4", "MIROC6", "MRI-ESM2-0", "IPSL-CM6A-LR", "CanESM5"]
 START_YEAR = 2025
 END_YEAR = 2034
 SCALE = 27830
 BATCH_SIZE = 20
 
 
-def extract_scenario(scenario, scenario_label):
-    """Extract variables using batched centroid sampling."""
+def postprocess(df):
+    """Derive additional climate features from raw CMIP6 variables."""
+    df = df.rename(columns=rename_map)
+    df['dtr'] = df['tmx'] - df['tmn']
+    es = 0.6108 * np.exp(17.27 * df['tmp'] / (df['tmp'] + 237.3))
+    df['vpd'] = es * (1 - df['hurs'] / 100)
+    df['vap'] = es * (df['hurs'] / 100)
+    df['pet'] = 0.0023 * (df['tmp'] + 17.8) * \
+        np.sqrt(df['dtr'].clip(lower=0)) * (df['srad'] * 0.0864)
+    df['cld'] = ((1 - df['srad'] / 250.0) * 100).clip(lower=0, upper=100)
+    df = df.drop(columns=['hurs'], errors='ignore')
+    return df
+
+
+def extract_scenario(scenario, scenario_label, gcm_model):
+    """Extract variables for a single GCM using batched centroid sampling."""
     print(f"\n{'='*60}")
-    print(f"Extracting {scenario_label} ({scenario})")
+    print(f"Extracting {scenario_label} ({scenario}) - {gcm_model}")
     print(f"{'='*60}")
 
     all_rows = []
@@ -85,7 +112,7 @@ def extract_scenario(scenario, scenario_label):
             var_start = time.time()
 
             collection = ee.ImageCollection("NASA/GDDP-CMIP6") \
-                .filter(ee.Filter.eq("model", MODEL)) \
+                .filter(ee.Filter.eq("model", gcm_model)) \
                 .filter(ee.Filter.eq("scenario", scenario)) \
                 .filterDate(f"{year}-01-01", f"{year}-12-31") \
                 .select(var)
@@ -132,24 +159,10 @@ def extract_scenario(scenario, scenario_label):
     total_time = time.time() - start_time
     print(f"  Total: {total_time:.0f}s")
 
-    # ── Post-process ──────────────────────────────────────────────────────
     df = pd.DataFrame(all_rows)
-    df = df.rename(columns=rename_map)
+    df = postprocess(df)
 
-    df['dtr'] = df['tmx'] - df['tmn']
-
-    es = 0.6108 * np.exp(17.27 * df['tmp'] / (df['tmp'] + 237.3))
-    df['vpd'] = es * (1 - df['hurs'] / 100)
-    df['vap'] = es * (df['hurs'] / 100)
-
-    df['pet'] = 0.0023 * (df['tmp'] + 17.8) * \
-        np.sqrt(df['dtr'].clip(lower=0)) * (df['srad'] * 0.0864)
-
-    df['cld'] = ((1 - df['srad'] / 250.0) * 100).clip(lower=0, upper=100)
-
-    df = df.drop(columns=['hurs'], errors='ignore')
-
-    output_path = os.path.join(data_dir, f'{scenario_label}_projections_full.csv')
+    output_path = os.path.join(data_dir, f'{scenario_label}_{gcm_model}_projections.csv')
     df.to_csv(output_path, index=False)
     print(f"  Saved: {output_path}")
     print(f"  Shape: {df.shape}, Provinces: {df['province'].nunique()}")
@@ -159,6 +172,8 @@ def extract_scenario(scenario, scenario_label):
 
 
 # ── Run ───────────────────────────────────────────────────────────────────
-ssp245_df = extract_scenario('ssp245', 'ssp245')
-ssp585_df = extract_scenario('ssp585', 'ssp585')
-print("\nDone! Both scenarios saved to Pipeline/data/")
+for gcm in MODELS:
+    for scenario, label in [('ssp245', 'ssp245'), ('ssp585', 'ssp585')]:
+        extract_scenario(scenario, label, gcm)
+
+print(f"\nDone! All {len(MODELS)} models x 2 scenarios saved to Pipeline/data/")

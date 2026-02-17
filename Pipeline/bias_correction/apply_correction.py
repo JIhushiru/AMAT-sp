@@ -1,12 +1,12 @@
 """
-Compute and apply bias correction to CMIP6 future projections.
+Compute and apply bias correction to CMIP6 future projections for each GCM.
 
 Method: Delta method (additive bias correction)
   corrected = future_cmip6 + (mean_terraclimate - mean_cmip6_historical)
 
-For each province and each CMIP6-sourced variable, we compute the mean
-difference between TerraClimate (training data) and CMIP6 over the
-overlap period (2015-2024), then add that offset to future projections.
+Each GCM is bias-corrected independently against TerraClimate, because each
+model has its own systematic biases. Per-model corrected outputs are saved
+for ensemble aggregation downstream.
 
 Reference: Maraun & Widmann (2018), Statistical Downscaling and Bias
 Correction for Climate Research.
@@ -18,107 +18,109 @@ import pandas as pd
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, '..', 'data')
 
-# ── Load data ─────────────────────────────────────────────────────────────
-# TerraClimate-based historical training data
+MODELS = ["GFDL-ESM4", "MIROC6", "MRI-ESM2-0", "IPSL-CM6A-LR", "CanESM5"]
+
+# ── Load TerraClimate training data ──────────────────────────────────────
 terra_df = pd.read_excel(os.path.join(data_dir, 'banana_yield_2010-2024.xlsx'))
 
-# CMIP6 historical overlap (2015-2024)
-cmip6_hist_path = os.path.join(base_dir, 'cmip6_historical_2015-2024.csv')
-if not os.path.exists(cmip6_hist_path):
-    raise FileNotFoundError(
-        f"Run extract_historical_cmip6.py first.\n"
-        f"Expected: {cmip6_hist_path}"
-    )
-cmip6_hist = pd.read_csv(cmip6_hist_path)
-
-# Future CMIP6 projections
-ssp245_path = os.path.join(data_dir, 'ssp245_projections_full.csv')
-ssp585_path = os.path.join(data_dir, 'ssp585_projections_full.csv')
-ssp245_df = pd.read_csv(ssp245_path)
-ssp585_df = pd.read_csv(ssp585_path)
-
-# ── Variables to bias-correct ─────────────────────────────────────────────
-# Only correct variables that come from CMIP6 (not frozen features)
+# Variables to bias-correct (only those sourced from CMIP6)
 cmip6_features = ['tmp', 'tmx', 'tmn', 'pre', 'srad', 'ws', 'vpd', 'vap', 'dtr', 'pet', 'cld']
 
 # Filter TerraClimate to overlap period (2015-2024)
 terra_overlap = terra_df[terra_df['year'].between(2015, 2024)].copy()
 
-# Common provinces
-common_provinces = set(terra_overlap['province'].unique()) & \
-                   set(cmip6_hist['province'].unique())
-print(f"Common provinces for bias correction: {len(common_provinces)}")
 
-terra_overlap = terra_overlap[terra_overlap['province'].isin(common_provinces)]
-cmip6_hist = cmip6_hist[cmip6_hist['province'].isin(common_provinces)]
+def compute_and_apply_bias(gcm_model):
+    """Compute bias factors and apply correction for one GCM."""
+    print(f"\n{'='*60}")
+    print(f"Bias correction: {gcm_model}")
+    print(f"{'='*60}")
 
-# ── Compute bias per province per variable ────────────────────────────────
-terra_means = terra_overlap.groupby('province')[cmip6_features].mean()
-cmip6_means = cmip6_hist.groupby('province')[cmip6_features].mean()
+    # Load this model's historical overlap data
+    hist_path = os.path.join(base_dir, f'cmip6_historical_{gcm_model}_2015-2024.csv')
+    if not os.path.exists(hist_path):
+        print(f"  SKIP: {hist_path} not found (run extract_historical_cmip6.py)")
+        return None
 
-# Bias = TerraClimate - CMIP6 (additive offset)
-bias = terra_means - cmip6_means
+    cmip6_hist = pd.read_csv(hist_path)
 
-print(f"\n{'='*60}")
-print("Bias correction factors (TerraClimate - CMIP6, province mean):")
-print(f"{'='*60}")
-for feat in cmip6_features:
-    b = bias[feat]
-    print(f"  {feat:5s}: mean={b.mean():+.3f}, std={b.std():.3f}, "
-          f"range=[{b.min():+.3f}, {b.max():+.3f}]")
+    # Common provinces
+    common_provinces = set(terra_overlap['province'].unique()) & \
+                       set(cmip6_hist['province'].unique())
+    print(f"  Common provinces: {len(common_provinces)}")
 
-# Save bias factors
-bias_path = os.path.join(base_dir, 'bias_factors.csv')
-bias.to_csv(bias_path)
-print(f"\nBias factors saved to: {bias_path}")
+    terra_filt = terra_overlap[terra_overlap['province'].isin(common_provinces)]
+    cmip6_filt = cmip6_hist[cmip6_hist['province'].isin(common_provinces)]
 
-# ── Apply correction ──────────────────────────────────────────────────────
-def apply_bias(df, scenario_label):
-    """Apply additive bias correction to future projections."""
-    corrected = df.copy()
-    corrected_count = 0
+    # Compute bias per province per variable
+    terra_means = terra_filt.groupby('province')[cmip6_features].mean()
+    cmip6_means = cmip6_filt.groupby('province')[cmip6_features].mean()
+    bias = terra_means - cmip6_means
 
-    for province in corrected['province'].unique():
-        if province in bias.index:
-            mask = corrected['province'] == province
-            for feat in cmip6_features:
-                if feat in corrected.columns:
-                    corrected.loc[mask, feat] += bias.loc[province, feat]
-                    corrected_count += mask.sum()
+    # Save bias factors for this model
+    bias_path = os.path.join(base_dir, f'bias_factors_{gcm_model}.csv')
+    bias.to_csv(bias_path)
 
-    # Clip non-negative variables
-    for feat in ['pre', 'srad', 'pet']:
-        if feat in corrected.columns:
-            corrected[feat] = corrected[feat].clip(lower=0)
+    for feat in cmip6_features:
+        b = bias[feat]
+        print(f"  {feat:5s}: mean={b.mean():+.3f}, std={b.std():.3f}, "
+              f"range=[{b.min():+.3f}, {b.max():+.3f}]")
 
-    # Clip percentage variables
-    if 'cld' in corrected.columns:
-        corrected['cld'] = corrected['cld'].clip(lower=0, upper=100)
+    # Apply correction to both SSP scenarios
+    for scenario_label in ['ssp245', 'ssp585']:
+        future_path = os.path.join(data_dir, f'{scenario_label}_{gcm_model}_projections.csv')
+        if not os.path.exists(future_path):
+            print(f"  SKIP: {future_path} not found")
+            continue
 
-    output_path = os.path.join(base_dir, f'{scenario_label}_corrected.csv')
-    corrected.to_csv(output_path, index=False)
-    print(f"\n{scenario_label} corrected: {output_path}")
-    print(f"  Shape: {corrected.shape}")
+        future_df = pd.read_csv(future_path)
+        corrected = future_df.copy()
 
-    return corrected
+        for province in corrected['province'].unique():
+            if province in bias.index:
+                mask = corrected['province'] == province
+                for feat in cmip6_features:
+                    if feat in corrected.columns:
+                        corrected.loc[mask, feat] += bias.loc[province, feat]
+
+        # Clip non-negative variables
+        for feat in ['pre', 'srad', 'pet']:
+            if feat in corrected.columns:
+                corrected[feat] = corrected[feat].clip(lower=0)
+
+        if 'cld' in corrected.columns:
+            corrected['cld'] = corrected['cld'].clip(lower=0, upper=100)
+
+        output_path = os.path.join(base_dir, f'{scenario_label}_{gcm_model}_corrected.csv')
+        corrected.to_csv(output_path, index=False)
+        print(f"  {scenario_label} corrected: {output_path} ({corrected.shape})")
+
+    return bias
 
 
-ssp245_corrected = apply_bias(ssp245_df, 'ssp245')
-ssp585_corrected = apply_bias(ssp585_df, 'ssp585')
+# ── Run for all models ───────────────────────────────────────────────────
+all_biases = {}
+for gcm in MODELS:
+    bias = compute_and_apply_bias(gcm)
+    if bias is not None:
+        all_biases[gcm] = bias
 
-# ── Summary comparison ────────────────────────────────────────────────────
-print(f"\n{'='*60}")
-print("Before vs After correction (national means):")
-print(f"{'='*60}")
-print(f"{'Feature':>6s} | {'Terra':>8s} | {'CMIP6 raw':>9s} | {'Corrected':>9s} | {'Bias':>8s}")
-print("-" * 55)
+# ── Summary comparison across models ─────────────────────────────────────
+if all_biases:
+    print(f"\n{'='*60}")
+    print("Cross-model bias summary (mean across provinces):")
+    print(f"{'='*60}")
+    print(f"{'Feature':>6s}", end="")
+    for gcm in all_biases:
+        short = gcm[:10]
+        print(f" | {short:>10s}", end="")
+    print()
+    print("-" * (8 + 13 * len(all_biases)))
 
-terra_national = terra_overlap[cmip6_features].mean()
-for feat in cmip6_features:
-    t = terra_national[feat]
-    raw = ssp245_df[feat].mean() if feat in ssp245_df.columns else float('nan')
-    corr = ssp245_corrected[feat].mean() if feat in ssp245_corrected.columns else float('nan')
-    b = bias[feat].mean()
-    print(f"{feat:>6s} | {t:8.2f} | {raw:9.2f} | {corr:9.2f} | {b:+8.3f}")
+    for feat in cmip6_features:
+        print(f"{feat:>6s}", end="")
+        for gcm in all_biases:
+            print(f" | {all_biases[gcm][feat].mean():+10.3f}", end="")
+        print()
 
-print(f"\nDone! Corrected projections saved to Pipeline/bias_correction/")
+print(f"\nDone! Bias correction applied for {len(all_biases)} models")

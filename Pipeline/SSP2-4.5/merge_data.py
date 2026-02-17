@@ -1,9 +1,9 @@
 """
 Merge historical climate features with SSP2-4.5 projections for 2025-2034.
 
-Uses the full CMIP6 extraction (7 variables + derived features) from
-extract_cmip6.py. Only features without CMIP6 projections (aet, def,
-PDSI, q, soil, wet) use historical province averages.
+Processes all 5 GCMs in the ensemble independently. For each model, CMIP6-sourced
+features come from bias-corrected projections while features without CMIP6
+equivalents (aet, def, PDSI, q, soil, wet) use historical province averages.
 
 See ../feature_methods.py for detailed documentation and references.
 """
@@ -14,26 +14,11 @@ import pandas as pd
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, '..', 'data')
 
-# Load historical training data and full CMIP6 projections
+MODELS = ["GFDL-ESM4", "MIROC6", "MRI-ESM2-0", "IPSL-CM6A-LR", "CanESM5"]
+SCENARIO = 'ssp245'
+
+# Load historical training data
 hist_df = pd.read_excel(os.path.join(data_dir, 'banana_yield_2010-2024.xlsx'))
-
-# Prefer bias-corrected data > full CMIP6 > old 2-variable CSV
-corrected_path = os.path.join(base_dir, '..', 'bias_correction', 'ssp245_corrected.csv')
-full_path = os.path.join(data_dir, 'ssp245_projections_full.csv')
-old_path = os.path.join(data_dir, 'ssp245_projections.csv')
-
-if os.path.exists(corrected_path):
-    ssp_df = pd.read_csv(corrected_path)
-    print(f"Using bias-corrected CMIP6 projections: {ssp_df.columns.tolist()}")
-    use_full = True
-elif os.path.exists(full_path):
-    ssp_df = pd.read_csv(full_path)
-    print(f"Using full CMIP6 projections (no bias correction): {ssp_df.columns.tolist()}")
-    use_full = True
-else:
-    ssp_df = pd.read_csv(old_path)
-    print(f"Using old 2-variable projections (tmp, pre only)")
-    use_full = False
 
 # All 17 climate features
 all_features = [
@@ -43,30 +28,38 @@ all_features = [
 
 assert all(col in hist_df.columns for col in all_features), "Missing columns in historical data"
 
-years = list(range(2025, 2035))
-
-# Features that come directly from CMIP6 (available in full extraction)
+# Features from CMIP6 vs frozen at historical averages
 cmip6_features = ['tmp', 'pre', 'tmx', 'tmn', 'srad', 'ws', 'vpd', 'vap', 'dtr', 'pet', 'cld']
-
-# Features that remain as historical province averages (no CMIP6 source)
 frozen_features = ['aet', 'def', 'PDSI', 'q', 'soil', 'wet']
 
-# Step 1: Compute historical averages per province (for frozen features)
+# Historical averages for frozen features
 avg_by_province = hist_df.groupby('province')[frozen_features].mean().reset_index()
+hist_provinces = set(hist_df['province'].unique())
 
-# Step 2: Build future data
-if use_full:
-    # Match provinces between SSP and historical data
-    ssp_provinces = set(ssp_df['province'].unique())
-    hist_provinces = set(hist_df['province'].unique())
-    common_provinces = ssp_provinces & hist_provinces
-    print(f"SSP provinces: {len(ssp_provinces)}, Historical: {len(hist_provinces)}, Matched: {len(common_provinces)}")
+for gcm in MODELS:
+    print(f"\n{'='*60}")
+    print(f"Merging {SCENARIO} - {gcm}")
+    print(f"{'='*60}")
 
-    # Start with CMIP6 features
+    # Prefer bias-corrected > raw
+    corrected_path = os.path.join(base_dir, '..', 'bias_correction', f'{SCENARIO}_{gcm}_corrected.csv')
+    raw_path = os.path.join(data_dir, f'{SCENARIO}_{gcm}_projections.csv')
+
+    if os.path.exists(corrected_path):
+        ssp_df = pd.read_csv(corrected_path)
+        print(f"  Using bias-corrected: {corrected_path}")
+    elif os.path.exists(raw_path):
+        ssp_df = pd.read_csv(raw_path)
+        print(f"  Using raw (no bias correction): {raw_path}")
+    else:
+        print(f"  SKIP: no data found for {gcm}")
+        continue
+
+    # Match provinces
+    common_provinces = set(ssp_df['province'].unique()) & hist_provinces
+    print(f"  Matched provinces: {len(common_provinces)}")
+
     available_cmip6 = [f for f in cmip6_features if f in ssp_df.columns]
-    print(f"CMIP6 features available: {available_cmip6}")
-    print(f"Frozen features (historical avg): {frozen_features}")
-
     merged = ssp_df[ssp_df['province'].isin(common_provinces)][['province', 'year'] + available_cmip6].copy()
 
     # Add frozen features from historical averages
@@ -81,45 +74,15 @@ if use_full:
                 merged[feat] = merged[feat].fillna(merged[f'{feat}_fill'])
                 merged = merged.drop(columns=[f'{feat}_fill'])
 
-else:
-    # Fallback: old behavior (only tmp and pre from CMIP6, derive the rest)
-    avg_all = hist_df.groupby('province')[all_features].mean().reset_index()
-    rows = []
-    for _, row in avg_all.iterrows():
-        for year in years:
-            r = {feat: row[feat] for feat in all_features}
-            r['province'] = row['province']
-            r['year'] = year
-            rows.append(r)
+    # Reorder columns
+    merged = merged[['province', 'year'] + all_features]
 
-    merged = pd.DataFrame(rows)
-    merged = merged.merge(
-        ssp_df[['province', 'year', 'pre', 'tmp']],
-        on=['province', 'year'], how='left', suffixes=('_hist', '_ssp')
-    )
+    output_path = os.path.join(base_dir, f'merged_future_data_{gcm}.csv')
+    merged.to_csv(output_path, index=False)
+    print(f"  Saved: {output_path} ({merged.shape})")
 
-    tmp_delta = merged['tmp_ssp'] - merged['tmp_hist']
-    merged['tmp'] = merged['tmp_ssp']
-    merged['pre'] = merged['pre_ssp']
-    merged['tmx'] = merged['tmx'] + tmp_delta
-    merged['tmn'] = merged['tmn'] + tmp_delta
-    merged['dtr'] = merged['tmx'] - merged['tmn']
-    es_new = 0.6108 * np.exp(17.27 * merged['tmp'] / (merged['tmp'] + 237.3))
-    es_hist = 0.6108 * np.exp(17.27 * merged['tmp_hist'] / (merged['tmp_hist'] + 237.3))
-    merged['vpd'] = merged['vpd'] * (es_new / es_hist)
-    merged['pet'] = merged['pet'] * (es_new / es_hist)
-    merged = merged.drop(columns=['tmp_hist', 'tmp_ssp', 'pre_hist', 'pre_ssp'])
+    for feat in all_features:
+        status = "CMIP6" if feat in cmip6_features else "frozen"
+        print(f"    {feat:5s} [{status:6s}]: {merged[feat].min():.2f} - {merged[feat].max():.2f} (mean {merged[feat].mean():.2f})")
 
-# Reorder columns
-merged = merged[['province', 'year'] + all_features]
-
-# Save
-output_path = os.path.join(base_dir, 'merged_future_data.csv')
-merged.to_csv(output_path, index=False)
-
-print(f"\nMerged data saved to: {output_path}")
-print(f"Shape: {merged.shape}")
-print(f"\nFeature summary (SSP2-4.5):")
-for feat in all_features:
-    status = "CMIP6" if (use_full and feat in cmip6_features) else "frozen"
-    print(f"  {feat:5s} [{status:6s}]: {merged[feat].min():.2f} - {merged[feat].max():.2f} (mean {merged[feat].mean():.2f})")
+print(f"\nDone! Merged data for {len(MODELS)} models under {SCENARIO}")

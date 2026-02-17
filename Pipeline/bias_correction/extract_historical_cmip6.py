@@ -4,8 +4,8 @@ Extract CMIP6 climate data for the historical overlap period (2015-2024).
 Uses the same centroid point sampling approach as extract_cmip6.py but for
 the historical period (SSP scenarios start at 2015 in NASA/GDDP-CMIP6).
 
-This data is compared against TerraClimate-based training data to compute
-bias correction factors.
+Extracts all 5 GCMs in the ensemble so each model gets its own bias
+correction factors computed against TerraClimate.
 """
 import os
 import json
@@ -47,7 +47,7 @@ rename_map = {
     'rsds': 'srad', 'sfcWind': 'ws', 'hurs': 'hurs',
 }
 
-MODEL = "GFDL-ESM4"
+MODELS = ["GFDL-ESM4", "MIROC6", "MRI-ESM2-0", "IPSL-CM6A-LR", "CanESM5"]
 # NASA/GDDP-CMIP6: "historical" scenario covers up to 2014, SSP starts 2015
 HIST_YEARS = list(range(2015, 2025))  # overlap with training data
 SCENARIO = "ssp245"  # SSP scenarios barely diverge this early
@@ -55,10 +55,24 @@ SCALE = 27830
 BATCH_SIZE = 20
 
 
-def extract_historical():
-    """Extract CMIP6 historical data for the overlap period."""
+def postprocess(df):
+    """Derive additional climate features from raw CMIP6 variables."""
+    df = df.rename(columns=rename_map)
+    df['dtr'] = df['tmx'] - df['tmn']
+    es = 0.6108 * np.exp(17.27 * df['tmp'] / (df['tmp'] + 237.3))
+    df['vpd'] = es * (1 - df['hurs'] / 100)
+    df['vap'] = es * (df['hurs'] / 100)
+    df['pet'] = 0.0023 * (df['tmp'] + 17.8) * \
+        np.sqrt(df['dtr'].clip(lower=0)) * (df['srad'] * 0.0864)
+    df['cld'] = ((1 - df['srad'] / 250.0) * 100).clip(lower=0, upper=100)
+    df = df.drop(columns=['hurs'], errors='ignore')
+    return df
+
+
+def extract_historical(gcm_model):
+    """Extract CMIP6 historical data for one GCM over the overlap period."""
     print(f"\nExtracting CMIP6 historical overlap ({HIST_YEARS[0]}-{HIST_YEARS[-1]})")
-    print(f"Model: {MODEL}, Scenario: {SCENARIO}")
+    print(f"Model: {gcm_model}, Scenario: {SCENARIO}")
 
     # Build EE point features
     ee_points = []
@@ -81,7 +95,7 @@ def extract_historical():
             var_start = time.time()
 
             collection = ee.ImageCollection("NASA/GDDP-CMIP6") \
-                .filter(ee.Filter.eq("model", MODEL)) \
+                .filter(ee.Filter.eq("model", gcm_model)) \
                 .filter(ee.Filter.eq("scenario", SCENARIO)) \
                 .filterDate(f"{year}-01-01", f"{year}-12-31") \
                 .select(var)
@@ -125,20 +139,10 @@ def extract_historical():
     total_time = time.time() - start_time
     print(f"  Total: {total_time:.0f}s")
 
-    # Post-process
     df = pd.DataFrame(all_rows)
-    df = df.rename(columns=rename_map)
+    df = postprocess(df)
 
-    df['dtr'] = df['tmx'] - df['tmn']
-    es = 0.6108 * np.exp(17.27 * df['tmp'] / (df['tmp'] + 237.3))
-    df['vpd'] = es * (1 - df['hurs'] / 100)
-    df['vap'] = es * (df['hurs'] / 100)
-    df['pet'] = 0.0023 * (df['tmp'] + 17.8) * \
-        np.sqrt(df['dtr'].clip(lower=0)) * (df['srad'] * 0.0864)
-    df['cld'] = ((1 - df['srad'] / 250.0) * 100).clip(lower=0, upper=100)
-    df = df.drop(columns=['hurs'], errors='ignore')
-
-    output_path = os.path.join(base_dir, 'cmip6_historical_2015-2024.csv')
+    output_path = os.path.join(base_dir, f'cmip6_historical_{gcm_model}_2015-2024.csv')
     df.to_csv(output_path, index=False)
     print(f"\n  Saved: {output_path}")
     print(f"  Shape: {df.shape}, Provinces: {df['province'].nunique()}")
@@ -147,4 +151,6 @@ def extract_historical():
 
 
 if __name__ == '__main__':
-    extract_historical()
+    for gcm in MODELS:
+        extract_historical(gcm)
+    print(f"\nDone! Historical data extracted for {len(MODELS)} models")
