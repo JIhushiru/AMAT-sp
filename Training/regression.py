@@ -128,11 +128,21 @@ def main(model_type, fs):
     X = X[non_zero_features]
     y = y[non_zero_features]
 
-    run_ols(X, y)
-    calculate_vif(X)
+    ols_model = run_ols(X, y)
+    initial_vif = calculate_vif(X)
 
     tscv = TimeSeriesSplit(n_splits=5)
-    check_multicollinearity(X)
+    high_vif_features, high_corr_pairs = check_multicollinearity(X)
+
+    diagnostics = {
+        'ols_summary': ols_model.summary().as_text(),
+        'ols_r2': ols_model.rsquared,
+        'ols_adj_r2': ols_model.rsquared_adj,
+        'ols_significant': ols_model.pvalues[ols_model.pvalues < 0.05].to_dict(),
+        'initial_vif': initial_vif,
+        'high_vif_features': high_vif_features,
+        'high_corr_pairs': high_corr_pairs,
+    }
 
     if fs == "yes":
         selected_features_per_fold = []
@@ -167,8 +177,13 @@ def main(model_type, fs):
             best_fold_metrics = []
             all_avg_r2_results = []
             param_grid = MODEL_PARAMS[model_name]()
+            param_list = list(ParameterGrid(param_grid))
+            total_params = len(param_list)
+            print(f"  Grid search: {total_params} parameter combos x 5 folds = {total_params * 5} fits", flush=True)
 
-            for params in ParameterGrid(param_grid):
+            for param_idx, params in enumerate(param_list, 1):
+                if param_idx % max(1, total_params // 10) == 0 or param_idx == 1:
+                    print(f"  [{model_name}] Combo {param_idx}/{total_params} ({param_idx*100//total_params}%) | Best R² so far: {best_avg_r2:.4f}", flush=True)
                 fold_r2_scores = []
                 fold_metrics = []
 
@@ -238,9 +253,9 @@ def main(model_type, fs):
             print(f"  Metrics: {metrics_to_print}")
 
     if fs == "yes":
-        return results, data, feature_selection_info_per_fold
+        return results, data, feature_selection_info_per_fold, diagnostics
     elif fs == "no":
-        return results, data
+        return results, data, diagnostics
 
 
 if __name__ == "__main__":
@@ -248,13 +263,13 @@ if __name__ == "__main__":
     fs = "yes"
 
     if fs == "yes":
-        results, data, feature_selection_info_per_fold = main(model_type='regression', fs="yes")
+        results, data, feature_selection_info_per_fold, diagnostics = main(model_type='regression', fs="yes")
         performance_df = visualize_model_performance(results, True)
-        save_results_to_word(results, feature_selection_info_per_fold)
+        save_results_to_word(results, feature_selection_info_per_fold, diagnostics=diagnostics)
     elif fs == "no":
-        results, data = main(model_type='regression', fs="no")
+        results, data, diagnostics = main(model_type='regression', fs="no")
         performance_df = visualize_model_performance(results, False)
-        save_results_to_word(results, None, "model_results_without_fs.docx")
+        save_results_to_word(results, None, "model_results_without_fs.docx", diagnostics=diagnostics)
 
     save_top_models(results, data, n_top=3)
     print(f"Overall Execution Time: {time.time() - start_time:.2f} seconds")

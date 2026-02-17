@@ -18,7 +18,7 @@ def feature_selection_workflow(X, y, vif_threshold=5.0):
     X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
     print(f"Features standardized: {X_scaled_df.shape[1]} features")
 
-    filtered_features, removed_by_vif = drop_high_vif_features(
+    filtered_features, removed_by_vif, vif_before, vif_after = drop_high_vif_features(
         X_scaled_df, thresh=vif_threshold, protected_features=["tmp"]
     )
     X_filtered = X_scaled_df[filtered_features]
@@ -40,7 +40,10 @@ def feature_selection_workflow(X, y, vif_threshold=5.0):
     return {
         'selected_features': final_features,
         'removed_by_vif': removed_by_vif,
+        'vif_before': vif_before,
+        'vif_after': vif_after,
         'rejected_by_boruta': boruta_rejected,
+        'boruta_selected': boruta_selected,
         'original_count': X.shape[1],
         'final_count': len(final_features)
     }
@@ -53,6 +56,13 @@ def drop_high_vif_features(X, thresh=5.0, protected_features=None):
 
     X_copy = X.copy()
     removed_features = []
+
+    # Capture initial VIF scores before any filtering
+    vif_before = pd.DataFrame()
+    vif_before["feature"] = X_copy.columns
+    vif_before["VIF"] = [variance_inflation_factor(X_copy.values, i) for i in range(X_copy.shape[1])]
+    print("\nInitial VIF scores (before filtering):")
+    print(vif_before)
 
     while True:
         vif = pd.DataFrame()
@@ -73,18 +83,18 @@ def drop_high_vif_features(X, thresh=5.0, protected_features=None):
         else:
             break
 
-    final_vif = pd.DataFrame()
-    final_vif["feature"] = X_copy.columns
-    final_vif["VIF"] = [variance_inflation_factor(X_copy.values, i) for i in range(X_copy.shape[1])]
+    vif_after = pd.DataFrame()
+    vif_after["feature"] = X_copy.columns
+    vif_after["VIF"] = [variance_inflation_factor(X_copy.values, i) for i in range(X_copy.shape[1])]
     print("\nVIF scores after dropping high VIF features:")
-    print(final_vif)
+    print(vif_after)
 
     if removed_features:
         print(f"\nRemoved {len(removed_features)} features due to high VIF:")
         for item in removed_features:
             print(f"  - {item['feature']}: VIF = {item['vif']:.2f}")
 
-    return X_copy.columns.tolist(), removed_features
+    return X_copy.columns.tolist(), removed_features, vif_before, vif_after
 
 
 def temperature_rule(selected_features):
