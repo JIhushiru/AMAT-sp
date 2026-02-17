@@ -17,13 +17,18 @@ data_dir = os.path.join(base_dir, '..', 'data')
 # Load historical training data and full CMIP6 projections
 hist_df = pd.read_excel(os.path.join(data_dir, 'banana_yield_2010-2024.xlsx'))
 
-# Use full CMIP6 extraction if available, fall back to old 2-variable CSV
+# Prefer bias-corrected data > full CMIP6 > old 2-variable CSV
+corrected_path = os.path.join(base_dir, '..', 'bias_correction', 'ssp585_corrected.csv')
 full_path = os.path.join(data_dir, 'ssp585_projections_full.csv')
 old_path = os.path.join(data_dir, 'ssp585_projections.csv')
 
-if os.path.exists(full_path):
+if os.path.exists(corrected_path):
+    ssp_df = pd.read_csv(corrected_path)
+    print(f"Using bias-corrected CMIP6 projections: {ssp_df.columns.tolist()}")
+    use_full = True
+elif os.path.exists(full_path):
     ssp_df = pd.read_csv(full_path)
-    print(f"Using full CMIP6 projections: {ssp_df.columns.tolist()}")
+    print(f"Using full CMIP6 projections (no bias correction): {ssp_df.columns.tolist()}")
     use_full = True
 else:
     ssp_df = pd.read_csv(old_path)
