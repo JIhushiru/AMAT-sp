@@ -5,6 +5,7 @@ import HistoricalData from './pages/HistoricalData'
 import ModelResults from './pages/ModelResults'
 import SSPScenarios from './pages/SSPScenarios'
 import ProvinceDetail from './pages/ProvinceDetail'
+import Predict from './pages/Predict'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard' },
@@ -12,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/historical', label: 'Historical Data' },
   { to: '/models', label: 'Model Results' },
   { to: '/ssp', label: 'SSP Scenarios' },
+  { to: '/predict', label: 'Predict' },
 ]
 
 export default function App() {
@@ -49,6 +51,7 @@ export default function App() {
           <Route path="/historical" element={<HistoricalData />} />
           <Route path="/models" element={<ModelResults />} />
           <Route path="/ssp" element={<SSPScenarios />} />
+          <Route path="/predict" element={<Predict />} />
           <Route path="/province/:name" element={<ProvinceDetail />} />
         </Routes>
       </main>

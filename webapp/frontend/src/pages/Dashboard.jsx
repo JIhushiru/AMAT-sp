@@ -142,7 +142,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Link to="/map" className="bg-emerald-600 text-white rounded-lg p-4 text-center hover:bg-emerald-700 transition font-medium">
           Interactive Map
         </Link>
@@ -154,6 +154,9 @@ export default function Dashboard() {
         </Link>
         <Link to="/ssp" className="bg-orange-600 text-white rounded-lg p-4 text-center hover:bg-orange-700 transition font-medium">
           SSP Scenarios
+        </Link>
+        <Link to="/predict" className="bg-teal-600 text-white rounded-lg p-4 text-center hover:bg-teal-700 transition font-medium">
+          Predict Yield
         </Link>
       </div>
     </div>
