@@ -88,7 +88,25 @@ To run: `python Pipeline/train_models.py`
 | SVM | scikit-learn |
 | XGBoost | `xgboost` |
 
-Cubist consistently comes out on top (CV R2 ~ 0.67).
+Cubist consistently comes out on top (CV R² ~ 0.67).
+
+### Baseline comparison
+
+The pipeline includes a province historical mean baseline -- for each province, it just predicts the average yield from the training years. This baseline gets a CV R² of 0.92, which beats all 6 ML models.
+
+That sounds bad, but it makes sense: most of the variation in banana yield is between provinces, not over time. Davao del Norte consistently yields ~50 tons/ha while mountain provinces sit around 2-5. Knowing which province you're looking at explains most of the variance.
+
+The reason we still use the climate-based models is that the baseline cannot project under changed climate. It predicts the exact same yield regardless of whether temperature rises by 1°C or 3°C. For the actual research question -- what happens to yields under SSP2-4.5 vs SSP5-8.5 -- only the climate-sensitive models are useful. The baseline is there to contextualize the R² values, not to replace the models.
+
+| Model | CV R² | Train R² | RMSE | MAE |
+|-------|-------|----------|------|-----|
+| Baseline (province mean) | 0.9206 | 0.9511 | 2.69 | 1.36 |
+| Cubist | 0.6699 | 0.9751 | 1.92 | 1.23 |
+| XGBoost | 0.6024 | 0.9038 | 3.77 | 2.77 |
+| Random Forest | 0.5901 | 0.9431 | 2.90 | 1.83 |
+| GBM | 0.5852 | 0.9019 | 3.81 | 2.89 |
+| SVM | 0.4916 | 0.7038 | 6.62 | 3.70 |
+| MARS | 0.4463 | 0.5385 | 8.26 | 6.08 |
 
 ## SSP predictions
 

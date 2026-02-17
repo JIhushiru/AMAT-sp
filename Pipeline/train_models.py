@@ -157,11 +157,56 @@ if MARS_AVAILABLE:
         'init_kwargs': {},
     }
 
-# ── Cross-validation and grid search ──────────────────────────────────────
+# ── Baseline: province historical mean ────────────────────────────────────
+# "Does the ML model beat just predicting each province's historical average?"
 tscv = TimeSeriesSplit(n_splits=5)
+provinces = hist_df['province']
+
+baseline_fold_r2 = []
+baseline_fold_rmse = []
+baseline_fold_mae = []
+baseline_fold_mape = []
+
+for train_idx, test_idx in tscv.split(X):
+    y_train_fold = y.iloc[train_idx]
+    y_test_fold = y.iloc[test_idx]
+    prov_train = provinces.iloc[train_idx]
+    prov_test = provinces.iloc[test_idx]
+
+    # compute province means from training data only
+    prov_means = pd.Series(y_train_fold.values, index=prov_train.values).groupby(level=0).mean()
+    global_mean = y_train_fold.mean()
+
+    # predict: use province mean if seen in training, else global mean
+    y_baseline = prov_test.map(prov_means).fillna(global_mean).values
+
+    baseline_fold_r2.append(r2_score(y_test_fold, y_baseline))
+    baseline_fold_rmse.append(np.sqrt(mean_squared_error(y_test_fold, y_baseline)))
+    baseline_fold_mae.append(mean_absolute_error(y_test_fold, y_baseline))
+    baseline_fold_mape.append(np.mean(np.abs((y_test_fold - y_baseline) / y_test_fold)) * 100)
+
+baseline_cv_r2 = np.mean(baseline_fold_r2)
+baseline_cv_rmse = np.mean(baseline_fold_rmse)
+baseline_cv_mae = np.mean(baseline_fold_mae)
+baseline_cv_mape = np.mean(baseline_fold_mape)
+
+# full-dataset baseline (province means from all data)
+prov_means_full = hist_df.groupby('province')['yield'].mean()
+y_baseline_full = provinces.map(prov_means_full).values
+baseline_train_r2 = r2_score(y, y_baseline_full)
+baseline_train_rmse = np.sqrt(mean_squared_error(y, y_baseline_full))
+baseline_train_mae = mean_absolute_error(y, y_baseline_full)
+baseline_train_mape = np.mean(np.abs((y - y_baseline_full) / y)) * 100
+
+print(f"\n{'='*55}")
+print("Baseline: Province Historical Mean")
+print(f"  CV R²:    {baseline_cv_r2:.4f}")
+print(f"  Train R²: {baseline_train_r2:.4f}  |  RMSE: {baseline_train_rmse:.4f}  |  MAE: {baseline_train_mae:.4f}")
+
 results = {}
 overall_start = time.time()
 
+# ── Cross-validation and grid search ──────────────────────────────────────
 for name, config in model_configs.items():
     print(f"\n{'='*55}")
     print(f"Training {name}...")
@@ -229,21 +274,39 @@ for name, config in model_configs.items():
     print(f"  Train R²: {train_r2:.4f}  |  RMSE: {train_rmse:.4f}  |  MAE: {train_mae:.4f}")
     print(f"  Time:     {elapsed:.1f}s")
 
+# ── Add baseline to results for unified comparison ───────────────────────
+results['Baseline'] = {
+    'model': None,
+    'scaler': None,
+    'best_params': {'method': 'province_historical_mean'},
+    'cv_r2': baseline_cv_r2,
+    'train_r2': baseline_train_r2,
+    'train_rmse': baseline_train_rmse,
+    'train_mae': baseline_train_mae,
+    'train_mape': baseline_train_mape,
+    'time': 0.0,
+}
+
 # ── Compare and rank ──────────────────────────────────────────────────────
 print(f"\n{'='*60}")
 print("MODEL COMPARISON (ranked by CV R²)")
 print(f"{'='*60}")
-print(f"  {'Rank':<5} {'Model':<8} {'CV R²':>8} {'Train R²':>10} {'RMSE':>8} {'MAE':>8} {'MAPE':>8}")
-print(f"  {'-'*53}")
+print(f"  {'Rank':<5} {'Model':<10} {'CV R²':>8} {'Train R²':>10} {'RMSE':>8} {'MAE':>8} {'MAPE':>8}")
+print(f"  {'-'*57}")
 
 sorted_results = sorted(results.items(), key=lambda x: x[1]['cv_r2'], reverse=True)
 for rank, (name, res) in enumerate(sorted_results, 1):
-    print(f"  {rank:<5} {name:<8} {res['cv_r2']:>8.4f} {res['train_r2']:>10.4f} {res['train_rmse']:>8.4f} {res['train_mae']:>8.4f} {res['train_mape']:>7.2f}%")
+    marker = ' <-- baseline' if name == 'Baseline' else ''
+    print(f"  {rank:<5} {name:<10} {res['cv_r2']:>8.4f} {res['train_r2']:>10.4f} {res['train_rmse']:>8.4f} {res['train_mae']:>8.4f} {res['train_mape']:>7.2f}%{marker}")
 
-best_name = sorted_results[0][0]
-best_result = sorted_results[0][1]
+# Best ML model (exclude baseline)
+sorted_ml = [(n, r) for n, r in sorted_results if n != 'Baseline']
+best_name = sorted_ml[0][0]
+best_result = sorted_ml[0][1]
 
+improvement = best_result['cv_r2'] - baseline_cv_r2
 print(f"\nBest model: {best_name} (CV R² = {best_result['cv_r2']:.4f})")
+print(f"Improvement over baseline: {improvement:+.4f} R² ({improvement / abs(baseline_cv_r2) * 100:+.1f}%)")
 print(f"Total training time: {time.time() - overall_start:.1f}s")
 
 # ── Save best model ──────────────────────────────────────────────────────
@@ -292,7 +355,14 @@ cv_r2s = [res['cv_r2'] for _, res in sorted_results]
 rmses = [res['train_rmse'] for _, res in sorted_results]
 maes = [res['train_mae'] for _, res in sorted_results]
 
-colors = ['#2ecc71' if name == best_name else '#3498db' for name in model_names]
+colors = []
+for name in model_names:
+    if name == best_name:
+        colors.append('#2ecc71')
+    elif name == 'Baseline':
+        colors.append('#e74c3c')
+    else:
+        colors.append('#3498db')
 
 axes[0].barh(model_names, cv_r2s, color=colors)
 axes[0].set_xlabel('CV R²')
