@@ -30,7 +30,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test, params):
     X_train_df = pd.DataFrame(X_train, columns=selected_features)
     X_test_df = pd.DataFrame(X_test, columns=selected_features)
 
-    model = XGBRegressor(random_state=42)
+    model = XGBRegressor(random_state=42, device='cuda')
     model.set_params(**params)
 
     model.fit(X_train_df, y_train)
