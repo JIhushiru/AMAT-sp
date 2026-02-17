@@ -116,11 +116,14 @@ def main(model_type, fs):
 
             best_avg_r2 = -np.inf
             best_params = None
+            best_fold_r2_scores = []
+            best_fold_metrics = []
             all_avg_r2_results = []
             param_grid = MODEL_PARAMS[model_name]()
 
             for params in ParameterGrid(param_grid):
                 fold_r2_scores = []
+                fold_metrics = []
 
                 for fold_idx, (train_index, test_index) in enumerate(tscv.split(X)):
                     if fs == "yes":
@@ -143,6 +146,7 @@ def main(model_type, fs):
                     if model is not None:
                         test_r2 = model.score(X_fold_test_scaled, y_fold_test)
                         fold_r2_scores.append(test_r2)
+                        fold_metrics.append(metrics)
 
                 if fold_r2_scores:
                     avg_r2 = np.mean(fold_r2_scores)
@@ -151,10 +155,17 @@ def main(model_type, fs):
                     if avg_r2 > best_avg_r2:
                         best_avg_r2 = avg_r2
                         best_params = params
+                        best_fold_r2_scores = fold_r2_scores[:]
+                        best_fold_metrics = fold_metrics[:]
 
             print(f"Best Params for {model_name}: {best_params}")
             print(f"Best Avg R2: {best_avg_r2:.4f}")
             print(f"Execution Time for {model_name}: {time.time() - start_time:.2f} seconds")
+
+            avg_rmse = np.mean([m['RMSE'] for m in best_fold_metrics])
+            avg_mse = np.mean([m['MSE'] for m in best_fold_metrics])
+            avg_mae = np.mean([m['MAE'] for m in best_fold_metrics])
+            avg_mape = np.mean([m['MAPE'] for m in best_fold_metrics])
 
             results[current_model_type][model_name] = {
                 'best_avg_r2': best_avg_r2,
@@ -162,13 +173,13 @@ def main(model_type, fs):
                 'all_results': all_avg_r2_results,
                 'avg_metrics': {
                     'R2': best_avg_r2,
-                    'RMSE': metrics['RMSE'],
-                    'MSE': metrics['MSE'],
-                    'MAE': metrics['MAE'],
-                    'MAPE': metrics['MAPE']
+                    'RMSE': avg_rmse,
+                    'MSE': avg_mse,
+                    'MAE': avg_mae,
+                    'MAPE': avg_mape
                 },
-                'fold_r2_scores': fold_r2_scores,
-                'fold_best_params': [best_params for _ in range(len(fold_r2_scores))]
+                'fold_r2_scores': best_fold_r2_scores,
+                'fold_best_params': [best_params for _ in range(len(best_fold_r2_scores))]
             }
 
     print("\nTraining Complete. Model Performance:")
