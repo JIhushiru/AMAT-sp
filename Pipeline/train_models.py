@@ -329,6 +329,40 @@ joblib.dump({
 
 print(f"\nBest model saved to: {save_path}")
 
+# ── Bootstrap models for prediction intervals ────────────────────────────
+N_BOOTSTRAP = 100
+print(f"\nBootstrapping {N_BOOTSTRAP} models for prediction intervals...")
+bootstrap_start = time.time()
+
+bootstrap_models = []
+rng = np.random.RandomState(42)
+
+for i in range(N_BOOTSTRAP):
+    # resample with replacement
+    idx = rng.choice(len(X), size=len(X), replace=True)
+    X_boot = X.iloc[idx].reset_index(drop=True)
+    y_boot = y.iloc[idx].reset_index(drop=True)
+
+    scaler_boot = StandardScaler()
+    X_boot_s = pd.DataFrame(scaler_boot.fit_transform(X_boot), columns=features)
+
+    model_boot = model_configs[best_name]['class'](**model_configs[best_name]['init_kwargs'])
+    model_boot.set_params(**best_result['best_params'])
+    model_boot.fit(X_boot_s, y_boot)
+
+    bootstrap_models.append({'model': model_boot, 'scaler': scaler_boot})
+
+bootstrap_path = os.path.join(save_dir, 'bootstrap_models.joblib')
+joblib.dump({
+    'models': bootstrap_models,
+    'features': features,
+    'model_name': best_name,
+    'n_bootstrap': N_BOOTSTRAP,
+}, bootstrap_path)
+
+print(f"  {N_BOOTSTRAP} bootstrap models saved to: {bootstrap_path}")
+print(f"  Bootstrap time: {time.time() - bootstrap_start:.1f}s")
+
 # Save comparison table
 comparison_df = pd.DataFrame([
     {

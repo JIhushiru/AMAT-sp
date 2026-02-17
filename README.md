@@ -74,6 +74,7 @@ Faster version with trimmed hyperparameter grids, meant to feed into the predict
 3. Trains all 6 models with 5-fold TimeSeriesSplit cross-validation
 4. Ranks by mean CV R2, retrains the best model on the full dataset
 5. Saves the model, scaler, and metadata to `Pipeline/saved_model/best_model.joblib`
+6. Trains 100 bootstrap models (resampled with replacement) for prediction intervals
 
 To run: `python Pipeline/train_models.py`
 
@@ -92,11 +93,11 @@ Cubist consistently comes out on top (CV R² ~ 0.67).
 
 ### Baseline comparison
 
-The pipeline includes a province historical mean baseline -- for each province, it just predicts the average yield from the training years. This baseline gets a CV R² of 0.92, which beats all 6 ML models.
+The pipeline includes a province historical mean baseline. For each province, it just predicts the average yield from the training years. This baseline gets a CV R² of 0.92, which beats all 6 ML models.
 
 That sounds bad, but it makes sense: most of the variation in banana yield is between provinces, not over time. Davao del Norte consistently yields ~50 tons/ha while mountain provinces sit around 2-5. Knowing which province you're looking at explains most of the variance.
 
-The reason we still use the climate-based models is that the baseline cannot project under changed climate. It predicts the exact same yield regardless of whether temperature rises by 1°C or 3°C. For the actual research question -- what happens to yields under SSP2-4.5 vs SSP5-8.5 -- only the climate-sensitive models are useful. The baseline is there to contextualize the R² values, not to replace the models.
+The reason we still use the climate-based models is that the baseline cannot project under changed climate. It predicts the exact same yield regardless of whether temperature rises by 1°C or 3°C. For the actual research question (what happens to yields under SSP2-4.5 vs SSP5-8.5), only the climate-sensitive models are useful. The baseline is there to contextualize the R² values, not to replace the models.
 
 | Model | CV R² | Train R² | RMSE | MAE |
 |-------|-------|----------|------|-----|
@@ -112,14 +113,20 @@ The reason we still use the climate-based models is that the baseline cannot pro
 
 Once the best model is saved, the prediction pipeline generates yield forecasts for 2025-2034 under two climate scenarios.
 
+### Prediction intervals
+
+Point predictions alone don't convey how confident the model is. To address this, the pipeline uses bootstrap resampling: the best model is retrained 100 times on randomly resampled (with replacement) versions of the training data. Each bootstrap model produces a slightly different prediction for every future province-year, and the 5th and 95th percentiles of those 100 predictions form a 90% prediction interval.
+
+These intervals show up as shaded bands on the national trend plots and as `yield_lower` / `yield_upper` columns in the output Excel files. They are also clipped to each province's historical yield range, same as the point predictions.
+
 ### How future climate features are built
 
 CMIP6 only gives us precipitation and temperature projections. The other features need to be derived or held constant. The approach (documented in detail in `Pipeline/feature_methods.py`):
 
-- **Direct from SSP:** `tmp`, `pre` -- used as-is from CMIP6 projections
-- **Delta change method:** `tmx`, `tmn` -- the SSP temperature anomaly (SSP tmp minus historical avg tmp) is added to the historical average of each. `dtr` is then just tmx - tmn
-- **Tetens equation scaling:** `vpd`, `pet` -- scaled by the ratio of saturation vapor pressure at the new temperature vs the historical temperature
-- **Historical averages:** `cld, wet, vap, aet, def, PDSI, q, soil, srad, ws` -- held at each province's 2010-2024 average since SSP projections aren't available for these
+- **Direct from SSP:** `tmp`, `pre`, used as-is from CMIP6 projections
+- **Delta change method:** `tmx`, `tmn`, the SSP temperature anomaly (SSP tmp minus historical avg tmp) is added to the historical average of each. `dtr` is then just tmx - tmn
+- **Tetens equation scaling:** `vpd`, `pet`, scaled by the ratio of saturation vapor pressure at the new temperature vs the historical temperature
+- **Historical averages:** `cld, wet, vap, aet, def, PDSI, q, soil, srad, ws`, held at each province's 2010-2024 average since SSP projections aren't available for these
 
 This is done by `Pipeline/SSP2-4.5/merge_data.py` and `Pipeline/SSP5-8.5/merge_data.py`.
 
@@ -127,7 +134,7 @@ This is done by `Pipeline/SSP2-4.5/merge_data.py` and `Pipeline/SSP5-8.5/merge_d
 
 ```
 python Pipeline/SSP2-4.5/merge_data.py          # build future climate features
-python Pipeline/SSP2-4.5/future_predictions.py   # predict yields
+python Pipeline/SSP2-4.5/future_predictions.py   # predict yields + intervals
 python Pipeline/SSP2-4.5/projections.py          # analysis and plots
 ```
 

@@ -75,13 +75,23 @@ national_trend.to_csv(os.path.join(base_dir, 'national_trend.csv'))
 
 sns.set(style="whitegrid")
 
+# National trend with prediction intervals
 plt.figure(figsize=(10, 5))
-plt.plot(national_trend.index, national_trend.values, marker='o')
+plt.plot(national_trend.index, national_trend.values, marker='o', zorder=3)
+
+# Add 90% prediction interval band for future years if available
+if 'yield_lower' in future_df.columns:
+    future_lower = future_df.groupby('year')['yield_lower'].mean()
+    future_upper = future_df.groupby('year')['yield_upper'].mean()
+    plt.fill_between(future_lower.index, future_lower.values, future_upper.values,
+                     alpha=0.25, color='tab:blue', label='90% prediction interval')
+    plt.legend()
+
 plt.xlabel('Year')
-plt.ylabel('Yield')
+plt.ylabel('Yield (tons/ha)')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(base_dir, 'national_yield_trend.png'))
+plt.savefig(os.path.join(base_dir, 'national_yield_trend.png'), dpi=300)
 plt.close()
 
 plt.figure(figsize=(12, 6))

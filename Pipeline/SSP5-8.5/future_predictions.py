@@ -99,8 +99,28 @@ X_future = future_df[features]
 X_future_scaled = pd.DataFrame(scaler.transform(X_future), columns=features)
 future_preds = model.predict(X_future_scaled)
 
+# ── Bootstrap prediction intervals (90% PI) ─────────────────────────────
+bootstrap_path = os.path.join(model_dir, 'bootstrap_models.joblib')
+if os.path.exists(bootstrap_path):
+    boot_data = joblib.load(bootstrap_path)
+    boot_models = boot_data['models']
+    n_boot = boot_data['n_bootstrap']
+
+    boot_preds = np.zeros((n_boot, len(X_future)))
+    for i, bm in enumerate(boot_models):
+        X_boot_scaled = pd.DataFrame(
+            bm['scaler'].transform(X_future), columns=features
+        )
+        boot_preds[i] = bm['model'].predict(X_boot_scaled)
+
+    future_df['yield_lower'] = np.percentile(boot_preds, 5, axis=0)
+    future_df['yield_upper'] = np.percentile(boot_preds, 95, axis=0)
+    print(f"\n90% prediction intervals computed from {n_boot} bootstrap models")
+else:
+    print("\nNo bootstrap models found, skipping prediction intervals")
+
 # Clip predictions per province to historical observed range (prevent extrapolation artifacts)
-# See feature_methods.clip_predictions() — Lobell & Burke (2010), Challinor et al. (2014)
+# Lobell & Burke (2010), Challinor et al. (2014)
 hist_province_bounds = hist_df.groupby('province')['yield'].agg(['min', 'max'])
 future_df['yield_raw'] = future_preds
 future_df['yield'] = future_preds
@@ -110,9 +130,12 @@ for province in future_df['province'].unique():
         pmax = hist_province_bounds.loc[province, 'max']
         mask = future_df['province'] == province
         future_df.loc[mask, 'yield'] = future_df.loc[mask, 'yield_raw'].clip(lower=pmin, upper=pmax)
+        if 'yield_lower' in future_df.columns:
+            future_df.loc[mask, 'yield_lower'] = future_df.loc[mask, 'yield_lower'].clip(lower=pmin, upper=pmax)
+            future_df.loc[mask, 'yield_upper'] = future_df.loc[mask, 'yield_upper'].clip(lower=pmin, upper=pmax)
 
 clipped_count = (future_df['yield'] != future_df['yield_raw']).sum()
-print(f"\nClipped {clipped_count}/{len(future_df)} predictions to historical province ranges")
+print(f"Clipped {clipped_count}/{len(future_df)} predictions to historical province ranges")
 future_df = future_df.drop(columns=['yield_raw'])
 
 output_path = os.path.join(base_dir, 'banana_yield_predictions_2025-2034.xlsx')
@@ -120,3 +143,5 @@ future_df.to_excel(output_path, index=False)
 
 print(f"\nPredictions saved to: {output_path}")
 print(f"Future yield range: {future_preds.min():.2f} - {future_preds.max():.2f} (mean {future_preds.mean():.2f})")
+if 'yield_lower' in future_df.columns:
+    print(f"90% PI width (avg): {(future_df['yield_upper'] - future_df['yield_lower']).mean():.2f} tons/ha")
