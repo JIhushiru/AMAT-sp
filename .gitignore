@@ -10,4 +10,5 @@ build/
 .venv/
 *.log
 node_modules/
+webapp/deploy/
 nul

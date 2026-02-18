@@ -52,7 +52,7 @@ def prepare_huggingface(output_dir=None):
         print("  Copied training data")
 
     # Copy trained models
-    models_src = PROJECT_ROOT / "Training" / "Models" / "top3"
+    models_src = PROJECT_ROOT / "Training" / "models" / "top3"
     if models_src.exists():
         models_dst = output_dir / "models"
         if models_dst.exists():
@@ -91,7 +91,7 @@ def prepare_huggingface(output_dir=None):
 
     # Copy SSP data
     for ssp_name in ["SSP2-4.5", "SSP5-8.5"]:
-        ssp_src = PROJECT_ROOT / "SSPs Data collection" / ssp_name
+        ssp_src = PROJECT_ROOT / "Pipeline" / ssp_name
         if ssp_src.exists():
             ssp_dst = output_dir / "ssp" / ssp_name
             if ssp_dst.exists():

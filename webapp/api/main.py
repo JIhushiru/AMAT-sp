@@ -27,12 +27,12 @@ app.add_middleware(
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 TRAINING_DATA = PROJECT_ROOT / "Training" / "data" / "banana_yield_2010-2024.xlsx"
 TRAINING_PLOTS = PROJECT_ROOT / "Training" / "plots"
-MODELS_DIR = PROJECT_ROOT / "Training" / "Models" / "top3"
+MODELS_DIR = PROJECT_ROOT / "Training" / "models" / "top3"
 MAPPING_DIR = PROJECT_ROOT / "Mapping"
 MAPPING_CSV = MAPPING_DIR / "banana_yield_2010-2024.xlsx"
 GEOJSON_PATH = MAPPING_DIR / "philippines_provinces.geojson"
-SSP245_DIR = PROJECT_ROOT / "SSPs Data collection" / "SSP2-4.5"
-SSP585_DIR = PROJECT_ROOT / "SSPs Data collection" / "SSP5-8.5"
+SSP245_DIR = PROJECT_ROOT / "Pipeline" / "SSP2-4.5"
+SSP585_DIR = PROJECT_ROOT / "Pipeline" / "SSP5-8.5"
 
 # --- Model Cache ---
 _model_cache = {}
