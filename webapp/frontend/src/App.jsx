@@ -89,7 +89,7 @@ export default function App() {
             Institute of Mathematical Sciences &middot; College of Arts and Sciences &middot; University of the Philippines Los Ba&ntilde;os
           </p>
           <p className="text-[11px] text-gray-400 dark:text-gray-500">
-            Arsolon, J.H.R. (2025) &middot; Adviser: Dr. Destiny SM. Lutero &middot; Co-adviser: Dr. Mark Lexter De Lara
+            <a href="https://jhraportfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition">Arsolon, J.H.R.</a> (2025) &middot; Adviser: Dr. Destiny SM. Lutero &middot; Co-adviser: Dr. Mark Lexter De Lara
           </p>
         </div>
       </footer>
