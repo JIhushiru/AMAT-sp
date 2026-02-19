@@ -17,14 +17,14 @@ const FEATURE_LABELS = {
 }
 
 export default function HistoricalData() {
-  const { data: summary, loading: sLoad, error: sErr } = useFetch('/historical/summary')
+  const { data: summary, loading: sLoad, error: sErr, retrying, elapsed } = useFetch('/historical/summary')
   const { data: climate, loading: cLoad } = useFetch('/historical/climate-features')
   const { data: correlation, loading: corrLoad } = useFetch('/historical/correlation')
   const { data: rawData, loading: rLoad } = useFetch('/historical/data')
   const [selectedFeature, setSelectedFeature] = useState('tmp')
   const [searchTerm, setSearchTerm] = useState('')
 
-  if (sLoad) return <Loader />
+  if (sLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (sErr) return <ErrorBox message={sErr} />
 
   const trendData = summary

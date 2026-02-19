@@ -15,10 +15,10 @@ const FEATURE_LABELS = {
 
 export default function ProvinceDetail() {
   const { name } = useParams()
-  const { data, loading, error } = useFetch(`/historical/province/${encodeURIComponent(name)}`)
+  const { data, loading, error, retrying, elapsed } = useFetch(`/historical/province/${encodeURIComponent(name)}`)
   const { data: climate } = useFetch('/historical/climate-features')
 
-  if (loading) return <Loader />
+  if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={`Province "${name}" not found. ${error}`} />
 
   const trendData = data.trend

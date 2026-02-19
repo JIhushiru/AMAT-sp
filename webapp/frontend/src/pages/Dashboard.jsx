@@ -6,9 +6,9 @@ import {
 } from 'recharts'
 
 export default function Dashboard() {
-  const { data, loading, error } = useFetch('/dashboard')
+  const { data, loading, error, retrying, elapsed } = useFetch('/dashboard')
 
-  if (loading) return <Loader />
+  if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   const h = data.historical

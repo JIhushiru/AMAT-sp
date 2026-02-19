@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // In production, VITE_API_URL points to the HuggingFace Space (e.g. https://xxx.hf.space)
 // In development, it falls back to '/api' which Vite proxies to localhost:8000
@@ -9,31 +9,55 @@ export function useFetch(path) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retrying, setRetrying] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
     let cancelled = false
+    let timer = null
+    const start = Date.now()
     setLoading(true)
-    fetch(`${API}${path}`)
-      .then((r) => {
+    setError(null)
+    setRetrying(false)
+    setElapsed(0)
+
+    // Track elapsed time for long loads
+    timer = setInterval(() => {
+      if (!cancelled) setElapsed(Math.floor((Date.now() - start) / 1000))
+    }, 1000)
+
+    async function doFetch(attempt = 0) {
+      try {
+        const r = await fetch(`${API}${path}`)
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
-      .then((d) => {
+        const d = await r.json()
         if (!cancelled) {
           setData(d)
           setLoading(false)
+          setRetrying(false)
         }
-      })
-      .catch((e) => {
-        if (!cancelled) {
+      } catch (e) {
+        if (cancelled) return
+        // Retry up to 3 times for network/503 errors (HF cold start)
+        if (attempt < 3 && (e.message.includes('Failed to fetch') || e.message.includes('503') || e.message.includes('502'))) {
+          setRetrying(true)
+          await new Promise((r) => setTimeout(r, 5000))
+          if (!cancelled) doFetch(attempt + 1)
+        } else {
           setError(e.message)
           setLoading(false)
         }
-      })
-    return () => { cancelled = true }
+      }
+    }
+
+    doFetch()
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
   }, [path])
 
-  return { data, loading, error }
+  return { data, loading, error, retrying, elapsed }
 }
 
 export function StatCard({ label, value, sub }) {
@@ -46,18 +70,38 @@ export function StatCard({ label, value, sub }) {
   )
 }
 
-export function Loader() {
+export function Loader({ retrying, elapsed }) {
   return (
-    <div className="flex justify-center items-center py-20">
+    <div className="flex flex-col justify-center items-center py-20 gap-3">
       <div className="animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full" />
+      {elapsed > 5 && (
+        <div className="text-center">
+          <p className="text-sm text-gray-500">
+            {retrying
+              ? 'Server is waking up, retrying...'
+              : 'Loading data...'}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            {elapsed}s elapsed
+            {elapsed > 15 && ' — HuggingFace Spaces can take up to a minute on cold start'}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
 
 export function ErrorBox({ message }) {
+  const isServerDown = message.includes('Failed to fetch') || message.includes('503') || message.includes('502')
   return (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-      Error: {message}
+      <p className="font-medium">Error: {message}</p>
+      {isServerDown && (
+        <p className="text-sm mt-2">
+          The API server may be sleeping. HuggingFace Spaces free tier spins down after inactivity.
+          Try refreshing the page in about a minute.
+        </p>
+      )}
     </div>
   )
 }

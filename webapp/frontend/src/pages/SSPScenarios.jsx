@@ -7,7 +7,7 @@ import {
 
 export default function SSPScenarios() {
   const [scenario, setScenario] = useState('ssp245')
-  const { data, loading, error } = useFetch(`/ssp/${scenario}`)
+  const { data, loading, error, retrying, elapsed } = useFetch(`/ssp/${scenario}`)
 
   const scenarioInfo = {
     ssp245: {
@@ -25,7 +25,7 @@ export default function SSPScenarios() {
   }
   const info = scenarioInfo[scenario]
 
-  if (loading) return <Loader />
+  if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   if (!data?.available) {

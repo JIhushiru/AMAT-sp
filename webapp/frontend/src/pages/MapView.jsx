@@ -20,7 +20,7 @@ function getColor(val) {
 }
 
 export default function MapView() {
-  const { data: geojson, loading: gLoad, error: gErr } = useFetch('/map/geojson')
+  const { data: geojson, loading: gLoad, error: gErr, retrying, elapsed } = useFetch('/map/geojson')
   const { data: yieldData, loading: yLoad, error: yErr } = useFetch('/map/yield-by-province')
   const { data: mapImages } = useFetch('/map/images')
   const [selectedYear, setSelectedYear] = useState('average')
@@ -28,7 +28,7 @@ export default function MapView() {
   const [showStatic, setShowStatic] = useState(false)
   const navigate = useNavigate()
 
-  if (gLoad || yLoad) return <Loader />
+  if (gLoad || yLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (gErr) return <ErrorBox message={gErr} />
   if (yErr) return <ErrorBox message={yErr} />
 

@@ -1,9 +1,9 @@
 import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
 
 export default function ModelResults() {
-  const { data: plots, loading, error } = useFetch('/training/plots')
+  const { data: plots, loading, error, retrying, elapsed } = useFetch('/training/plots')
 
-  if (loading) return <Loader />
+  if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   if (!plots || plots.length === 0) {

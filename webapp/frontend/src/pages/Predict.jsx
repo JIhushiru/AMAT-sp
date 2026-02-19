@@ -26,7 +26,7 @@ const FEATURE_GROUPS = {
 }
 
 export default function Predict() {
-  const { data: modelData, loading: mLoad, error: mErr } = useFetch('/predict/models')
+  const { data: modelData, loading: mLoad, error: mErr, retrying, elapsed } = useFetch('/predict/models')
   const { data: featureData, loading: fLoad } = useFetch('/predict/features')
   const { data: provinces } = useFetch('/historical/provinces')
 
@@ -170,7 +170,7 @@ export default function Predict() {
     return groups
   }, [featureData])
 
-  if (mLoad || fLoad) return <Loader />
+  if (mLoad || fLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (mErr) return <ErrorBox message={mErr} />
 
   // No models available yet
