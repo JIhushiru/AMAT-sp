@@ -10,3 +10,12 @@ body {
   width: 100%;
   border-radius: 0.5rem;
 }
+
+/* Hide scrollbar for mobile nav */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

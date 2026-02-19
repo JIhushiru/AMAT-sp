@@ -142,20 +142,20 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Link to="/map" className="bg-emerald-600 text-white rounded-lg p-4 text-center hover:bg-emerald-700 transition font-medium">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <Link to="/map" className="bg-emerald-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-emerald-700 transition font-medium text-sm md:text-base">
           Interactive Map
         </Link>
-        <Link to="/historical" className="bg-blue-600 text-white rounded-lg p-4 text-center hover:bg-blue-700 transition font-medium">
+        <Link to="/historical" className="bg-blue-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-blue-700 transition font-medium text-sm md:text-base">
           Explore Data
         </Link>
-        <Link to="/models" className="bg-purple-600 text-white rounded-lg p-4 text-center hover:bg-purple-700 transition font-medium">
+        <Link to="/models" className="bg-purple-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-purple-700 transition font-medium text-sm md:text-base">
           Model Results
         </Link>
-        <Link to="/ssp" className="bg-orange-600 text-white rounded-lg p-4 text-center hover:bg-orange-700 transition font-medium">
+        <Link to="/ssp" className="bg-orange-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-orange-700 transition font-medium text-sm md:text-base">
           SSP Scenarios
         </Link>
-        <Link to="/predict" className="bg-teal-600 text-white rounded-lg p-4 text-center hover:bg-teal-700 transition font-medium">
+        <Link to="/predict" className="bg-teal-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-teal-700 transition font-medium text-sm md:text-base col-span-2 sm:col-span-1">
           Predict Yield
         </Link>
       </div>

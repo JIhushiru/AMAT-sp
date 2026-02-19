@@ -167,7 +167,7 @@ export default function MapView() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden relative" style={{ height: '600px' }}>
+        <div className="bg-white rounded-lg shadow overflow-hidden relative h-100 md:h-150">
           {geojson && (
             <MapContainer
               center={[12.5, 122]}
