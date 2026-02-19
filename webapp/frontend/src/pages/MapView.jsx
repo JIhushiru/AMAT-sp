@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
@@ -23,7 +23,11 @@ export default function MapView() {
   const { data: geojson, loading: gLoad, error: gErr, retrying, elapsed } = useFetch('/map/geojson')
   const { data: yieldData, loading: yLoad, error: yErr } = useFetch('/map/yield-by-province')
   const { data: mapImages } = useFetch('/map/images')
+  const { data: ssp245Data } = useFetch('/ssp/ssp245')
+  const { data: ssp585Data } = useFetch('/ssp/ssp585')
+
   const [selectedYear, setSelectedYear] = useState('average')
+  const [dataLayer, setDataLayer] = useState('historical') // 'historical', 'ssp245', 'ssp585'
   const [hoveredProvince, setHoveredProvince] = useState(null)
   const [showStatic, setShowStatic] = useState(false)
   const navigate = useNavigate()
@@ -41,9 +45,18 @@ export default function MapView() {
     years.push(...[...allYears].sort())
   }
 
+  // Build SSP province averages from province_summary data
+  function getSSPYield(provinceName, sspData) {
+    if (!sspData?.province_summary) return 0
+    const entry = sspData.province_summary[provinceName]
+    if (entry) return entry['Future Avg (2025\u20132034)'] || 0
+    return 0
+  }
+
   function getYield(provinceName) {
+    if (dataLayer === 'ssp245') return getSSPYield(provinceName, ssp245Data)
+    if (dataLayer === 'ssp585') return getSSPYield(provinceName, ssp585Data)
     if (!yieldData) return 0
-    // Try matching with different name formats
     const names = [provinceName, provinceName?.replace(/\s+/g, ' ').trim()]
     for (const n of names) {
       if (yieldData[n]) {
@@ -69,8 +82,11 @@ export default function MapView() {
   function onEachFeature(feature, layer) {
     const name = feature.properties.name
     const val = getYield(name)
+    const layerLabel = dataLayer === 'historical'
+      ? (selectedYear === 'average' ? 'Avg (2010-2024)' : selectedYear)
+      : dataLayer === 'ssp245' ? 'SSP2-4.5 Projected' : 'SSP5-8.5 Projected'
     layer.bindTooltip(
-      `<strong>${name}</strong><br/>Yield: ${val ? val.toFixed(2) + ' t/ha' : 'No data'}`,
+      `<strong>${name}</strong><br/>${layerLabel}: ${val ? val.toFixed(2) + ' t/ha' : 'No data'}`,
       { sticky: true }
     )
     layer.on({
@@ -80,22 +96,54 @@ export default function MapView() {
     })
   }
 
+  const mapKey = `${dataLayer}-${selectedYear}`
+  const ssp245Available = ssp245Data?.available
+  const ssp585Available = ssp585Data?.available
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-2xl font-bold text-gray-800">Yield Map</h2>
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm"
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y === 'average' ? 'Average (2010-2024)' : y}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Data layer selector */}
+          <div className="flex rounded overflow-hidden border text-sm">
+            <button
+              onClick={() => setDataLayer('historical')}
+              className={`px-3 py-1.5 ${dataLayer === 'historical' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            >
+              Historical
+            </button>
+            {ssp245Available && (
+              <button
+                onClick={() => setDataLayer('ssp245')}
+                className={`px-3 py-1.5 border-l ${dataLayer === 'ssp245' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+              >
+                SSP2-4.5
+              </button>
+            )}
+            {ssp585Available && (
+              <button
+                onClick={() => setDataLayer('ssp585')}
+                className={`px-3 py-1.5 border-l ${dataLayer === 'ssp585' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+              >
+                SSP5-8.5
+              </button>
+            )}
+          </div>
+
+          {dataLayer === 'historical' && (
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="border rounded px-3 py-1.5 text-sm"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y === 'average' ? 'Average (2010-2024)' : y}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             onClick={() => setShowStatic(!showStatic)}
             className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700"
@@ -119,7 +167,7 @@ export default function MapView() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden" style={{ height: '600px' }}>
+        <div className="bg-white rounded-lg shadow overflow-hidden relative" style={{ height: '600px' }}>
           {geojson && (
             <MapContainer
               center={[12.5, 122]}
@@ -132,7 +180,7 @@ export default function MapView() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <GeoJSON
-                key={selectedYear}
+                key={mapKey}
                 data={geojson}
                 style={style}
                 onEachFeature={onEachFeature}
@@ -142,7 +190,14 @@ export default function MapView() {
 
           {/* Legend */}
           <div className="absolute bottom-6 left-6 bg-white rounded-lg shadow-lg p-3 z-[1000]">
-            <p className="text-xs font-semibold mb-1.5">Yield (t/ha)</p>
+            <p className="text-xs font-semibold mb-1.5">
+              Yield (t/ha)
+              {dataLayer !== 'historical' && (
+                <span className="ml-1 font-normal text-gray-400">
+                  — {dataLayer === 'ssp245' ? 'SSP2-4.5' : 'SSP5-8.5'}
+                </span>
+              )}
+            </p>
             {YIELD_BINS.map((bin) => (
               <div key={bin.label} className="flex items-center gap-2 text-xs">
                 <span
