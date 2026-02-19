@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton, CollapsibleSection } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar, Cell,
@@ -30,7 +30,7 @@ function CompareView() {
 
   if (!d245?.available || !d585?.available) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-yellow-800">
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
         <h3 className="font-semibold text-lg mb-2">Both SSP datasets required for comparison</h3>
         <p className="text-sm">
           {!d245?.available && 'SSP2-4.5 data not available. '}
@@ -41,7 +41,6 @@ function CompareView() {
     )
   }
 
-  // Build combined national trend
   const trendData = []
   if (d245.historical_national_trend) {
     Object.entries(d245.historical_national_trend).forEach(([y, v]) => {
@@ -64,7 +63,6 @@ function CompareView() {
   }
   trendData.sort((a, b) => a.year - b.year)
 
-  // Province comparison
   const provinceCompare = []
   const ps245 = d245.province_summary || {}
   const ps585 = d585.province_summary || {}
@@ -100,9 +98,8 @@ function CompareView() {
         <StatCard label="Provinces" value={allProvinces.length} sub="Compared across scenarios" />
       </div>
 
-      {/* Combined trend chart */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
           National Yield: Historical + Both SSP Scenarios
         </h3>
         <ResponsiveContainer width="100%" height={350}>
@@ -119,11 +116,12 @@ function CompareView() {
         </ResponsiveContainer>
       </div>
 
-      {/* Province % Change comparison */}
       {provinceCompare.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-700">Province % Change: SSP2-4.5 vs SSP5-8.5</h3>
+        <CollapsibleSection
+          title="Province % Change: SSP2-4.5 vs SSP5-8.5"
+          defaultOpen={false}
+          badge={`${provinceCompare.length} provinces`}
+          actions={
             <ExportButton
               rows={provinceCompare.map((p) => ({
                 Province: p.name,
@@ -132,28 +130,29 @@ function CompareView() {
               }))}
               filename="ssp_comparison_by_province.csv"
             />
-          </div>
-          <div className="max-h-125 overflow-y-auto">
+          }
+        >
+          <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-gray-50">
+              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-left p-2">Province</th>
-                  <th className="text-right p-2 text-blue-700">SSP2-4.5</th>
-                  <th className="text-right p-2 text-red-700">SSP5-8.5</th>
-                  <th className="text-right p-2">Gap</th>
+                  <th className="text-left p-2 dark:text-gray-300">Province</th>
+                  <th className="text-right p-2 text-blue-700 dark:text-blue-400">SSP2-4.5</th>
+                  <th className="text-right p-2 text-red-700 dark:text-red-400">SSP5-8.5</th>
+                  <th className="text-right p-2 dark:text-gray-300">Gap</th>
                 </tr>
               </thead>
               <tbody>
                 {provinceCompare.map((p) => (
-                  <tr key={p.name} className="border-t hover:bg-gray-50">
-                    <td className="p-2 font-medium">{p.name}</td>
-                    <td className={`p-2 text-right font-mono ${p.ssp245 >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                  <tr key={p.name} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="p-2 font-medium dark:text-gray-200">{p.name}</td>
+                    <td className={`p-2 text-right font-mono ${p.ssp245 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                       {p.ssp245 > 0 ? '+' : ''}{p.ssp245.toFixed(2)}%
                     </td>
-                    <td className={`p-2 text-right font-mono ${p.ssp585 >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                    <td className={`p-2 text-right font-mono ${p.ssp585 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                       {p.ssp585 > 0 ? '+' : ''}{p.ssp585.toFixed(2)}%
                     </td>
-                    <td className="p-2 text-right font-mono text-gray-600">
+                    <td className="p-2 text-right font-mono text-gray-600 dark:text-gray-400">
                       {(p.ssp585 - p.ssp245).toFixed(2)}pp
                     </td>
                   </tr>
@@ -161,14 +160,14 @@ function CompareView() {
               </tbody>
             </table>
           </div>
-        </div>
+        </CollapsibleSection>
       )}
     </div>
   )
 }
 
 export default function SSPScenarios() {
-  const [view, setView] = useState('single') // 'single' or 'compare'
+  const [view, setView] = useState('single')
   const [scenario, setScenario] = useState('ssp245')
   const { data, loading, error, retrying, elapsed } = useFetch(`/ssp/${scenario}`)
 
@@ -177,7 +176,7 @@ export default function SSPScenarios() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800">SSP Scenarios</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">SSP Scenarios</h2>
         <div className="flex gap-2">
           {view === 'single' && Object.entries(scenarioInfo).map(([key, s]) => (
             <button
@@ -186,7 +185,7 @@ export default function SSPScenarios() {
               className={`px-4 py-2 rounded font-medium text-sm ${
                 scenario === key
                   ? 'text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
               style={scenario === key ? { backgroundColor: s.color } : {}}
             >
@@ -198,7 +197,7 @@ export default function SSPScenarios() {
             className={`px-4 py-2 rounded font-medium text-sm ${
               view === 'compare'
                 ? 'bg-purple-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
             {view === 'compare' ? 'Single View' : 'Compare Both'}
@@ -224,34 +223,29 @@ export default function SSPScenarios() {
 }
 
 function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed, info }) {
+  const [showAllProvinces, setShowAllProvinces] = useState(false)
+
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   if (!data?.available) {
     return (
-      <div className="space-y-4">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-yellow-800">
-          <h3 className="font-semibold text-lg mb-2">
-            {info.name} Data Not Available
-          </h3>
-          <p className="mb-4">{info.desc}</p>
-          <p className="text-sm">
-            Run the SSP pipeline to generate predictions:
-          </p>
-          <ol className="list-decimal ml-5 mt-2 text-sm space-y-1">
-            <li><code>python gee_to_gdrive.py</code> — Export climate data from Google Earth Engine</li>
-            <li><code>python tif_to_excel.py</code> — Extract province-level features from rasters</li>
-            <li><code>python merge_excels.py</code> — Merge historical + SSP climate data</li>
-            <li><code>python future_predictions.py</code> — Train Cubist model and predict 2025-2034</li>
-            <li><code>python projections.py</code> — Generate analysis and visualizations</li>
-            <li><code>python shap_analysis.py</code> — SHAP feature importance analysis</li>
-          </ol>
-        </div>
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
+        <h3 className="font-semibold text-lg mb-2">{info.name} Data Not Available</h3>
+        <p className="mb-4">{info.desc}</p>
+        <p className="text-sm">Run the SSP pipeline to generate predictions:</p>
+        <ol className="list-decimal ml-5 mt-2 text-sm space-y-1">
+          <li><code>python gee_to_gdrive.py</code> — Export climate data</li>
+          <li><code>python tif_to_excel.py</code> — Extract province-level features</li>
+          <li><code>python merge_excels.py</code> — Merge historical + SSP data</li>
+          <li><code>python future_predictions.py</code> — Predict 2025-2034</li>
+          <li><code>python projections.py</code> — Generate visualizations</li>
+          <li><code>python shap_analysis.py</code> — SHAP analysis</li>
+        </ol>
       </div>
     )
   }
 
-  // Combined historical + future trend
   const trendData = []
   if (data.historical_national_trend) {
     Object.entries(data.historical_national_trend).forEach(([y, v]) => {
@@ -276,13 +270,18 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
   const increasing = provinceSummary.filter((p) => (p['% Change'] || 0) > 0).length
   const decreasing = provinceSummary.filter((p) => (p['% Change'] || 0) < 0).length
 
+  // Show top 10 + bottom 10 by default
+  const displayedProvinces = showAllProvinces || provinceSummary.length <= 20
+    ? provinceSummary
+    : [...provinceSummary.slice(0, 10), ...provinceSummary.slice(-10)]
+
   return (
     <>
-      <div className="bg-white rounded-lg shadow p-4 border-l-4" style={{ borderLeftColor: info.color }}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border-l-4" style={{ borderLeftColor: info.color }}>
         <h3 className="font-semibold text-lg" style={{ color: info.color }}>
           {info.name}: {info.subtitle}
         </h3>
-        <p className="text-sm text-gray-600 mt-1">{info.desc}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{info.desc}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -300,8 +299,8 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
       </div>
 
       {/* National Trend */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
           National Yield Trend: Historical vs {info.name}
         </h3>
         <ResponsiveContainer width="100%" height={350}>
@@ -311,94 +310,88 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
             <YAxis domain={['auto', 'auto']} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
             <Tooltip />
             <Legend />
-            <Line
-              type="monotone" dataKey="historical" stroke="#059669"
-              strokeWidth={2} name="Historical (2010-2024)" dot={{ r: 3 }}
-            />
-            <Line
-              type="monotone" dataKey="future" stroke={info.color}
-              strokeWidth={2} strokeDasharray="5 5"
-              name={`${info.name} (2025-2034)`} dot={{ r: 3 }}
-            />
+            <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical (2010-2024)" dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="future" stroke={info.color} strokeWidth={2} strokeDasharray="5 5" name={`${info.name} (2025-2034)`} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Province % Change Bar Chart */}
+      {/* Province % Change Bar Chart — top/bottom 10 */}
       {provinceSummary.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            Province Yield % Change (Historical vs {info.name})
-          </h3>
-          <div className="overflow-x-auto">
-            <ResponsiveContainer width={Math.max(800, provinceSummary.length * 20)} height={400}>
-              <BarChart data={provinceSummary}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-90} textAnchor="end" height={120} tick={{ fontSize: 10 }} />
-                <YAxis label={{ value: '% Change', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Bar dataKey="% Change" name="% Change">
-                  {provinceSummary.map((entry, i) => (
-                    <Cell key={i} fill={(entry['% Change'] || 0) >= 0 ? '#059669' : '#dc2626'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        <CollapsibleSection title={`Province Yield % Change (Historical vs ${info.name})`}>
+          <div className="flex items-center gap-3 mb-3">
+            {provinceSummary.length > 20 && (
+              <button
+                onClick={() => setShowAllProvinces(!showAllProvinces)}
+                className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+              >
+                {showAllProvinces ? 'Show Top & Bottom 10' : `Show All ${provinceSummary.length} Provinces`}
+              </button>
+            )}
           </div>
-        </div>
+          <ResponsiveContainer width="100%" height={showAllProvinces ? 600 : 400}>
+            <BarChart data={displayedProvinces}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11 }} />
+              <YAxis label={{ value: '% Change', angle: -90, position: 'insideLeft' }} />
+              <Tooltip />
+              <Bar dataKey="% Change" name="% Change">
+                {displayedProvinces.map((entry, i) => (
+                  <Cell key={i} fill={(entry['% Change'] || 0) >= 0 ? '#059669' : '#dc2626'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CollapsibleSection>
       )}
 
       {/* SSP Plots */}
       {data.plots && data.plots.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">Generated Plots</h3>
+        <CollapsibleSection title="Generated Plots" defaultOpen={false} badge={`${data.plots.length} plots`}>
           <div className="grid md:grid-cols-2 gap-4">
             {data.plots.map((plot) => (
               <div key={plot}>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {plot.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
                   src={`${API_BASE}/ssp/${scenario}/plot/${plot}`}
                   alt={plot}
-                  className="w-full rounded border"
+                  className="w-full rounded border dark:border-gray-600"
                 />
               </div>
             ))}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
 
       {/* SHAP Images */}
       {data.shap_images && data.shap_images.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            SHAP Feature Importance
-          </h3>
+        <CollapsibleSection title="SHAP Feature Importance" defaultOpen={false} badge={`${data.shap_images.length} plots`}>
           <div className="grid md:grid-cols-2 gap-4">
             {data.shap_images.map((img) => (
               <div key={img}>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {img.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
                   src={`${API_BASE}/ssp/${scenario}/plot/${img}`}
                   alt={img}
-                  className="w-full rounded border"
+                  className="w-full rounded border dark:border-gray-600"
                 />
               </div>
             ))}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
 
       {/* Province Detail Table */}
       {provinceSummary.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-700">
-              Province-Level Summary
-            </h3>
+        <CollapsibleSection
+          title="Province-Level Summary"
+          defaultOpen={false}
+          badge={`${provinceSummary.length} provinces`}
+          actions={
             <ExportButton
               rows={provinceSummary.map((p) => ({
                 Province: p.name,
@@ -408,29 +401,30 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
               }))}
               filename={`${info.name}_province_summary.csv`}
             />
-          </div>
+          }
+        >
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-gray-50">
+              <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-left p-2">Province</th>
-                  <th className="text-right p-2">Historical Avg</th>
-                  <th className="text-right p-2">Future Avg</th>
-                  <th className="text-right p-2">% Change</th>
+                  <th className="text-left p-2 dark:text-gray-300">Province</th>
+                  <th className="text-right p-2 dark:text-gray-300">Historical Avg</th>
+                  <th className="text-right p-2 dark:text-gray-300">Future Avg</th>
+                  <th className="text-right p-2 dark:text-gray-300">% Change</th>
                 </tr>
               </thead>
               <tbody>
                 {provinceSummary.map((p) => (
-                  <tr key={p.name} className="border-t hover:bg-gray-50">
-                    <td className="p-2 font-medium">{p.name}</td>
-                    <td className="p-2 text-right font-mono">
+                  <tr key={p.name} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="p-2 font-medium dark:text-gray-200">{p.name}</td>
+                    <td className="p-2 text-right font-mono dark:text-gray-300">
                       {p['Historical Avg (2010\u20132024)']?.toFixed(2) || 'N/A'}
                     </td>
-                    <td className="p-2 text-right font-mono">
+                    <td className="p-2 text-right font-mono dark:text-gray-300">
                       {p['Future Avg (2025\u20132034)']?.toFixed(2) || 'N/A'}
                     </td>
                     <td className={`p-2 text-right font-mono font-semibold ${
-                      (p['% Change'] || 0) >= 0 ? 'text-emerald-700' : 'text-red-700'
+                      (p['% Change'] || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
                     }`}>
                       {p['% Change'] != null ? `${p['% Change'] > 0 ? '+' : ''}${p['% Change'].toFixed(2)}%` : 'N/A'}
                     </td>
@@ -439,7 +433,7 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
               </tbody>
             </table>
           </div>
-        </div>
+        </CollapsibleSection>
       )}
     </>
   )
