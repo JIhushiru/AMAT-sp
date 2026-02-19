@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 // In production, VITE_API_URL points to the HuggingFace Space (e.g. https://xxx.hf.space)
 // In development, it falls back to '/api' which Vite proxies to localhost:8000
 const API = (import.meta.env.VITE_API_URL || '') + '/api'
+export const API_BASE = API
 
 export function useFetch(path) {
   const [data, setData] = useState(null)

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, API_BASE } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar, Cell,
@@ -142,7 +142,7 @@ export default function SSPScenarios() {
               : 'N/A'
           }
         />
-        <StatCard label="Projection Period" value="2025-2034" sub="GFDL-ESM4 / CMIP6" />
+        <StatCard label="Projection Period" value="2025-2034" sub="5-GCM Ensemble / CMIP6" />
       </div>
 
       {/* National Trend */}
@@ -205,7 +205,7 @@ export default function SSPScenarios() {
                   {plot.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
-                  src={`/api/ssp/${scenario}/plot/${plot}`}
+                  src={`${API_BASE}/ssp/${scenario}/plot/${plot}`}
                   alt={plot}
                   className="w-full rounded border"
                 />
@@ -228,7 +228,7 @@ export default function SSPScenarios() {
                   {img.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
-                  src={`/api/ssp/${scenario}/plot/${img}`}
+                  src={`${API_BASE}/ssp/${scenario}/plot/${img}`}
                   alt={img}
                   className="w-full rounded border"
                 />

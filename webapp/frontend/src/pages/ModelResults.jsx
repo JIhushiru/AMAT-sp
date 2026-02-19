@@ -1,4 +1,4 @@
-import { useFetch, Loader, ErrorBox } from '../hooks'
+import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
 
 export default function ModelResults() {
   const { data: plots, loading, error } = useFetch('/training/plots')
@@ -59,7 +59,7 @@ export default function ModelResults() {
             {DESCRIPTIONS[plot.name.replace('.png', '')] || ''}
           </p>
           <img
-            src={`/api/training/plot/${plot.name}`}
+            src={`${API_BASE}/training/plot/${plot.name}`}
             alt={plot.label}
             className="w-full max-w-4xl mx-auto rounded"
           />

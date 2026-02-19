@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
-import { useFetch, Loader, ErrorBox } from '../hooks'
+import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
 
 const YIELD_BINS = [
   { min: 0, max: 15, color: '#fde725', label: '0-15' },
@@ -111,7 +111,7 @@ export default function MapView() {
             <div key={img.name} className="bg-white rounded-lg shadow p-3">
               <h3 className="font-semibold text-gray-700 mb-2">{img.label}</h3>
               <img
-                src={`/api/map/image/${img.name}`}
+                src={`${API_BASE}/map/image/${img.name}`}
                 alt={img.label}
                 className="w-full rounded"
               />

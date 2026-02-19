@@ -59,6 +59,26 @@ def _get_models():
     return _model_cache
 
 
+def _sanitize(obj):
+    """Recursively replace NaN/inf with None for JSON serialization."""
+    if isinstance(obj, float):
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        return obj
+    if isinstance(obj, (np.floating,)):
+        v = float(obj)
+        if np.isnan(v) or np.isinf(v):
+            return None
+        return v
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize(v) for v in obj]
+    return obj
+
+
 def safe_read_excel(path):
     """Read Excel, clean yield column."""
     df = pd.read_excel(path)
@@ -181,17 +201,22 @@ def get_yield_by_province():
     df["province"] = df["province"].apply(
         lambda x: re.sub(r"^\.*\s*", "", str(x))
     ).str.strip().str.title()
+    # Fix title-case particles to match GeoJSON naming (e.g. "Del" -> "del")
+    for particle in [" Del ", " De ", " Of "]:
+        df["province"] = df["province"].str.replace(
+            particle, particle.lower(), regex=False
+        )
 
     province_mapping = {
         "North Cotabato": "Cotabato",
-        "Compostela Valley": "Davao De Oro",
-        "Maguindanao Del Norte": "Maguindanao",
-        "Maguindanao Del Sur": "Maguindanao",
-        "City Of Davao": "Davao Del Sur",
-        "City Of Zamboanga": "Zamboanga Del Sur",
+        "Compostela Valley": "Davao de Oro",
+        "Maguindanao del Norte": "Maguindanao",
+        "Maguindanao del Sur": "Maguindanao",
+        "City of Davao": "Davao del Sur",
+        "City of Zamboanga": "Zamboanga del Sur",
         "Metropolitan Manila": "Ncr",
         "Cotabato": "North Cotabato",
-        "Davao Occidental": "Davao Del Sur",
+        "Davao Occidental": "Davao del Sur",
     }
     df["province"] = df["province"].replace(province_mapping)
 
@@ -344,7 +369,7 @@ def get_ssp_data(scenario: str):
     dirs = {"ssp245": SSP245_DIR, "ssp585": SSP585_DIR}
     if scenario not in dirs:
         raise HTTPException(400, "Invalid scenario. Use 'ssp245' or 'ssp585'.")
-    return load_ssp_data(dirs[scenario])
+    return _sanitize(load_ssp_data(dirs[scenario]))
 
 
 @app.get("/api/ssp/{scenario}/plot/{filename}")
