@@ -169,17 +169,32 @@ export default function MapView() {
       </div>
 
       {showStatic ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {mapImages?.map((img) => (
-            <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-              <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-2">{img.label}</h3>
-              <img
-                src={`${API_BASE}/map/image/${img.name}`}
-                alt={img.label}
-                className="w-full rounded"
-              />
-            </div>
-          ))}
+        <div className="space-y-6">
+          {[
+            { key: 'historical', title: 'Historical (2010\u20132024)' },
+            { key: 'ssp245', title: 'SSP2-4.5 Projected (2025\u20132034)' },
+            { key: 'ssp585', title: 'SSP5-8.5 Projected (2025\u20132034)' },
+          ].map(({ key, title }) => {
+            const imgs = mapImages?.filter((img) => (img.category || 'historical') === key)
+            if (!imgs?.length) return null
+            return (
+              <div key={key}>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">{title}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {imgs.map((img) => (
+                    <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                      <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">{img.label}</h4>
+                      <img
+                        src={`${API_BASE}/map/image/${img.name}`}
+                        alt={`${title} - ${img.label}`}
+                        className="w-full rounded"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative h-100 md:h-150">

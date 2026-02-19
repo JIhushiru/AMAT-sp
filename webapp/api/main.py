@@ -250,8 +250,10 @@ def get_yield_by_province():
 
 @app.get("/api/map/images")
 def list_map_images():
-    """List available map images."""
+    """List available map images (historical + SSP scenarios)."""
     images = []
+
+    # Historical maps
     for name, label in [
         ("banana_yield_map_gadm.png", "Philippines (Full)"),
         ("banana_yield_map_luzon.png", "Luzon"),
@@ -260,14 +262,42 @@ def list_map_images():
     ]:
         path = MAPPING_DIR / name
         if path.exists():
-            images.append({"name": name, "label": label})
+            images.append({"name": name, "label": label, "category": "historical"})
+
+    # SSP2-4.5 maps
+    for name, label in [
+        ("banana_yield_map_ssp245.png", "Philippines (Full)"),
+        ("banana_yield_map_luzon_ssp245.png", "Luzon"),
+        ("banana_yield_map_visayas_ssp245.png", "Visayas"),
+        ("banana_yield_map_mindanao_ssp245.png", "Mindanao"),
+    ]:
+        path = SSP245_DIR / name
+        if path.exists():
+            images.append({"name": f"ssp245/{name}", "label": label, "category": "ssp245"})
+
+    # SSP5-8.5 maps
+    for name, label in [
+        ("banana_yield_map_ssp585.png", "Philippines (Full)"),
+        ("banana_yield_map_luzon_ssp585.png", "Luzon"),
+        ("banana_yield_map_visayas_ssp585.png", "Visayas"),
+        ("banana_yield_map_mindanao_ssp585.png", "Mindanao"),
+    ]:
+        path = SSP585_DIR / name
+        if path.exists():
+            images.append({"name": f"ssp585/{name}", "label": label, "category": "ssp585"})
+
     return images
 
 
-@app.get("/api/map/image/{filename}")
+@app.get("/api/map/image/{filename:path}")
 def get_map_image(filename: str):
-    """Serve a map image file."""
-    path = MAPPING_DIR / filename
+    """Serve a map image file (historical or SSP)."""
+    if filename.startswith("ssp245/"):
+        path = SSP245_DIR / filename.removeprefix("ssp245/")
+    elif filename.startswith("ssp585/"):
+        path = SSP585_DIR / filename.removeprefix("ssp585/")
+    else:
+        path = MAPPING_DIR / filename
     if not path.exists():
         raise HTTPException(404, "Image not found")
     return FileResponse(path, media_type="image/png")
