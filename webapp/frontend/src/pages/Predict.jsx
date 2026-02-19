@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, ExportButton } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, ExportButton, SearchableSelect } from '../hooks'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
@@ -290,16 +290,13 @@ export default function Predict() {
                 </p>
               </div>
               <div className="flex gap-2 items-center">
-                <select
+                <SearchableSelect
+                  options={provinces || []}
                   value={selectedProvince}
-                  onChange={(e) => loadProvinceDefaults(e.target.value)}
-                  className="border rounded px-3 py-1.5 text-sm"
-                >
-                  <option value="">Load province averages...</option>
-                  {provinces?.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
+                  onChange={loadProvinceDefaults}
+                  placeholder="Search province..."
+                  className="w-56"
+                />
                 <button
                   onClick={resetToMeans}
                   className="text-sm text-gray-500 hover:text-gray-700 underline whitespace-nowrap"
@@ -462,16 +459,12 @@ export default function Predict() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Province (optional)
                 </label>
-                <select
+                <SearchableSelect
+                  options={provinces || []}
                   value={batchProvince}
-                  onChange={(e) => setBatchProvince(e.target.value)}
-                  className="w-full border rounded px-3 py-1.5 text-sm"
-                >
-                  <option value="">All Provinces</option>
-                  {provinces?.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
+                  onChange={setBatchProvince}
+                  placeholder="All Provinces"
+                />
               </div>
               <div className="flex items-end">
                 <button

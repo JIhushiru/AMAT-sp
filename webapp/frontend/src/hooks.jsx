@@ -124,6 +124,63 @@ export function ExportButton({ rows, filename, label = 'Export CSV' }) {
   )
 }
 
+export function SearchableSelect({ options = [], value, onChange, placeholder = 'Select...', className = '' }) {
+  const [search, setSearch] = useState('')
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const filtered = options.filter((o) =>
+    o.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <input
+        type="text"
+        value={open ? search : value || ''}
+        placeholder={placeholder}
+        onFocus={() => { setOpen(true); setSearch('') }}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full border rounded px-3 py-1.5 text-sm"
+      />
+      {open && (
+        <div className="absolute z-50 mt-1 w-full bg-white border rounded shadow-lg max-h-48 overflow-y-auto">
+          {value && (
+            <div
+              className="px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-100 cursor-pointer"
+              onClick={() => { onChange(''); setOpen(false); setSearch('') }}
+            >
+              Clear selection
+            </div>
+          )}
+          {filtered.length === 0 && (
+            <div className="px-3 py-1.5 text-sm text-gray-400">No matches</div>
+          )}
+          {filtered.map((o) => (
+            <div
+              key={o}
+              className={`px-3 py-1.5 text-sm cursor-pointer hover:bg-emerald-50 ${
+                o === value ? 'bg-emerald-100 font-medium' : ''
+              }`}
+              onClick={() => { onChange(o); setOpen(false); setSearch('') }}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ErrorBox({ message }) {
   const isServerDown = message.includes('Failed to fetch') || message.includes('503') || message.includes('502')
   return (
