@@ -8,9 +8,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 
 def get_parameters():
     return {
-        'n_committees': [i * 5 for i in range(1, 10)],
-        'n_rules': [i * 100 for i in range(1, 10)],
-        'neighbors': [i for i in range(1, 10)],
+        'n_committees': [1, 5, 10, 20],
+        'n_rules': [50, 100, 200, 500],
+        'neighbors': [None, 1, 3, 5, 9],
     }
 
 

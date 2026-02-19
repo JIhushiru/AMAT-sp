@@ -8,10 +8,10 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_s
 
 def get_parameters():
     return {
-        'C': [0.1, 1, 10],
-        'gamma': ['scale', 'auto', 0.001, 0.01, 0.1, 1],
+        'C': [0.1, 1, 10, 100],
+        'gamma': ['scale', 'auto', 0.01, 0.1],
         'kernel': ['rbf', 'poly'],
-        'epsilon': [0.01, 0.1, 0.2, 0.5]
+        'epsilon': [0.01, 0.1, 0.2]
     }
 
 

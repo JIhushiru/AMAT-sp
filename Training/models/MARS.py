@@ -82,8 +82,8 @@ class EarthWrapper(BaseEstimator, RegressorMixin):
 
 def get_parameters():
     return {
-        'max_terms': [10, 14, 18, 24, 30, 36, 42],
-        'max_degree': [1, 2, 4, 8]
+        'max_terms': [10, 15, 20, 25, 30],
+        'max_degree': [1, 2]
     }
 
 

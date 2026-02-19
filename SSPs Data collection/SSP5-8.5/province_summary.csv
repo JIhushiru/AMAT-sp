@@ -1,83 +1,83 @@
 province,Historical Avg (2010–2024),Future Avg (2025–2034),% Change
-Abra,7.46,7.32,-1.81
-Agusan del Norte,11.8,19.59,66.09
-Agusan del Sur,6.53,16.78,156.78
-Aklan,6.79,6.62,-2.54
-Albay,15.86,9.49,-40.18
-Antique,10.96,13.76,25.5
-Apayao,6.76,12.37,83.08
-Aurora,3.91,12.39,216.97
-Basilan,3.11,2.0,-35.72
-Bataan,5.66,7.54,33.17
-Batanes,2.95,6.75,128.92
-Batangas,5.84,10.38,77.83
-Benguet,6.66,11.51,72.84
-Biliran,8.76,15.23,73.9
-Bohol,12.01,15.83,31.8
-Bukidnon,61.85,50.51,-18.33
-Bulacan,13.07,15.75,20.44
-Cagayan,13.86,12.89,-7.03
-Camarines Norte,1.88,2.48,32.16
-Camarines Sur,3.17,6.34,99.63
-Camiguin,4.09,18.69,357.28
-Capiz,6.85,6.23,-8.97
-Catanduanes,2.64,5.86,122.02
-Cavite,5.68,4.31,-24.06
-Cebu,8.33,7.12,-14.44
-Davao Occidental,37.95,39.28,3.5
-Davao Oriental,15.45,14.04,-9.13
-Davao de Oro,42.0,39.86,-5.09
-Davao del Norte,43.63,34.7,-20.47
-Davao del Sur,38.75,37.44,-3.38
-Dinagat Islands,3.08,12.51,306.11
-Eastern Samar,2.58,4.96,91.87
-Guimaras,11.73,9.14,-22.11
-Ifugao,7.4,9.63,30.2
-Ilocos Norte,6.26,10.31,64.66
-Ilocos Sur,6.67,13.72,105.72
-Iloilo,9.93,12.27,23.47
-Isabela,16.22,7.45,-54.08
-Kalinga,4.12,4.89,18.71
-La Union,6.55,11.62,77.28
-Laguna,2.21,5.97,169.68
-Lanao del Norte,32.85,25.23,-23.19
-Lanao del Sur,21.22,23.4,10.25
-Leyte,6.04,10.81,78.97
-Maguindanao del Norte,20.74,29.42,41.85
-Maguindanao del Sur,20.74,20.89,0.73
-Marinduque,1.5,4.87,224.79
-Masbate,3.7,10.32,179.1
-Misamis Occidental,14.73,14.44,-1.98
-Misamis Oriental,12.58,21.32,69.56
-Mountain Province,5.63,19.8,251.45
-Negros Occidental,9.36,13.87,48.09
-Negros Oriental,8.99,10.54,17.24
-North Cotabato,34.55,33.05,-4.36
-Northern Samar,3.62,9.13,152.59
-Nueva Ecija,11.28,12.52,11.01
-Nueva Vizcaya,13.78,24.1,74.84
-Occidental Mindoro,4.65,7.16,53.85
-Oriental Mindoro,5.65,5.72,1.2
-Palawan,5.3,5.65,6.54
-Pampanga,5.57,7.76,39.28
-Pangasinan,4.75,5.05,6.14
-Quezon,3.08,5.3,71.92
-Quirino,7.95,17.62,121.68
-Rizal,2.12,8.93,321.22
-Romblon,3.67,6.3,71.69
-Samar,22.51,16.21,-28.0
-Sarangani,52.61,40.79,-22.47
-Siquijor,11.7,9.29,-20.62
-Sorsogon,7.01,8.51,21.48
-South Cotabato,30.96,30.8,-0.52
-Southern Leyte,6.49,11.66,79.54
-Sultan Kudarat,27.48,38.85,41.39
-Sulu,6.52,14.28,119.1
-Surigao del Norte,4.51,23.98,432.07
-Surigao del Sur,22.21,34.63,55.94
-Tarlac,5.88,8.06,37.19
-Tawi-Tawi,11.19,8.64,-22.83
-Zambales,18.5,18.1,-2.2
-Zamboanga Sibugay,13.84,17.85,29.01
-Zamboanga del Norte,10.81,14.73,36.21
-Zamboanga del Sur,12.83,22.38,74.44
+Abra,7.46,6.7,-10.18
+Agusan del Norte,11.8,13.04,10.58
+Agusan del Sur,6.53,7.19,10.01
+Aklan,6.79,6.46,-4.81
+Albay,15.86,8.09,-48.97
+Antique,10.96,10.37,-5.42
+Apayao,6.76,8.33,23.29
+Aurora,3.91,,
+Basilan,3.11,8.35,168.58
+Bataan,5.66,5.9,4.29
+Batanes,2.95,2.62,-11.15
+Batangas,5.84,6.49,11.21
+Benguet,6.66,6.36,-4.54
+Biliran,8.76,8.45,-3.52
+Bohol,12.01,13.61,13.3
+Bukidnon,61.85,55.96,-9.52
+Bulacan,13.07,11.38,-12.94
+Cagayan,13.86,,
+Camarines Norte,1.88,3.8,102.35
+Camarines Sur,3.17,5.86,84.75
+Camiguin,4.09,11.97,192.8
+Capiz,6.85,7.49,9.41
+Catanduanes,2.64,4.43,67.64
+Cavite,5.68,5.7,0.29
+Cebu,8.33,9.52,14.33
+Davao Occidental,37.95,35.93,-5.31
+Davao Oriental,15.45,17.53,13.48
+Davao de Oro,42.0,34.88,-16.96
+Davao del Norte,43.63,38.2,-12.45
+Davao del Sur,38.75,35.76,-7.72
+Dinagat Islands,3.08,8.83,186.64
+Eastern Samar,2.58,4.43,71.59
+Guimaras,11.73,10.58,-9.82
+Ifugao,7.4,9.08,22.68
+Ilocos Norte,6.26,7.58,21.11
+Ilocos Sur,6.67,6.87,3.03
+Iloilo,9.93,9.12,-8.17
+Isabela,16.22,12.85,-20.79
+Kalinga,4.12,5.87,42.38
+La Union,6.55,6.53,-0.27
+Laguna,2.21,6.17,178.83
+Lanao del Norte,32.85,19.96,-39.22
+Lanao del Sur,21.22,21.62,1.89
+Leyte,6.04,7.56,25.13
+Maguindanao del Norte,20.74,16.83,-18.86
+Maguindanao del Sur,20.74,18.92,-8.77
+Marinduque,1.5,4.75,217.25
+Masbate,3.7,4.47,21.04
+Misamis Occidental,14.73,12.4,-15.84
+Misamis Oriental,12.58,10.18,-19.08
+Mountain Province,5.63,6.28,11.41
+Negros Occidental,9.36,9.68,3.35
+Negros Oriental,8.99,10.58,17.63
+North Cotabato,34.55,24.42,-29.32
+Northern Samar,3.62,7.66,111.77
+Nueva Ecija,11.28,9.27,-17.8
+Nueva Vizcaya,13.78,13.16,-4.53
+Occidental Mindoro,4.65,5.74,23.31
+Oriental Mindoro,5.65,5.23,-7.51
+Palawan,5.3,5.14,-3.02
+Pampanga,5.57,6.25,12.23
+Pangasinan,4.75,5.19,9.17
+Quezon,3.08,4.27,38.55
+Quirino,7.95,6.36,-20.01
+Rizal,2.12,5.26,147.9
+Romblon,3.67,6.4,74.42
+Samar,22.51,16.19,-28.05
+Sarangani,52.61,35.58,-32.37
+Siquijor,11.7,12.93,10.44
+Sorsogon,7.01,6.49,-7.4
+South Cotabato,30.96,30.83,-0.41
+Southern Leyte,6.49,6.7,3.19
+Sultan Kudarat,27.48,32.47,18.16
+Sulu,6.52,7.37,13.01
+Surigao del Norte,4.51,6.0,33.16
+Surigao del Sur,22.21,25.18,13.39
+Tarlac,5.88,6.82,15.99
+Tawi-Tawi,11.19,,
+Zambales,18.5,17.11,-7.53
+Zamboanga Sibugay,13.84,11.56,-16.47
+Zamboanga del Norte,10.81,11.09,2.56
+Zamboanga del Sur,12.83,14.55,13.39

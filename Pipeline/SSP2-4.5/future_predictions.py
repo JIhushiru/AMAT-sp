@@ -185,25 +185,13 @@ else:
     future_df['yield_lower'] = ensemble_min
     future_df['yield_upper'] = ensemble_max
 
-# ── Clip to historical province bounds ───────────────────────────────────
-hist_province_bounds = hist_df.groupby('province')['yield'].agg(['min', 'max'])
-future_df['yield_raw'] = future_df['yield'].copy()
-
-for province in future_df['province'].unique():
-    if province in hist_province_bounds.index:
-        pmin = hist_province_bounds.loc[province, 'min']
-        pmax = hist_province_bounds.loc[province, 'max']
-        mask = future_df['province'] == province
-        future_df.loc[mask, 'yield'] = future_df.loc[mask, 'yield_raw'].clip(lower=pmin, upper=pmax)
-        future_df.loc[mask, 'yield_lower'] = future_df.loc[mask, 'yield_lower'].clip(lower=pmin, upper=pmax)
-        future_df.loc[mask, 'yield_upper'] = future_df.loc[mask, 'yield_upper'].clip(lower=pmin, upper=pmax)
-        for gcm in gcm_predictions:
-            col = f'yield_{gcm}'
-            future_df.loc[mask, col] = future_df.loc[mask, col].clip(lower=pmin, upper=pmax)
-
-clipped_count = (future_df['yield'] != future_df['yield_raw']).sum()
-print(f"  Clipped {clipped_count}/{len(future_df)} predictions to historical province ranges")
-future_df = future_df.drop(columns=['yield_raw'])
+# ── Clip to zero floor (yield cannot be negative) ────────────────────────
+yield_cols = ['yield', 'yield_lower', 'yield_upper'] + [f'yield_{gcm}' for gcm in gcm_predictions]
+for col in yield_cols:
+    neg_count = (future_df[col] < 0).sum()
+    future_df[col] = future_df[col].clip(lower=0)
+    if neg_count > 0:
+        print(f"  Clipped {neg_count} negative values in {col} to zero")
 
 # ── Save ─────────────────────────────────────────────────────────────────
 output_path = os.path.join(base_dir, 'banana_yield_predictions_2025-2034.xlsx')

@@ -9,11 +9,11 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_s
 def get_parameters():
     return {
         'n_estimators': [100, 300, 500],
-        'learning_rate': [0.05, 0.1, 0.2],
-        'max_depth': [3, 5, 7, 9],
-        'subsample': [0.6, 0.8, 1.0],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 4]
+        'learning_rate': [0.01, 0.05, 0.1],
+        'max_depth': [3, 5, 7],
+        'subsample': [0.7, 0.8, 1.0],
+        'min_samples_split': [2, 5],
+        'min_samples_leaf': [1, 2]
     }
 
 

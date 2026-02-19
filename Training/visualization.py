@@ -36,7 +36,7 @@ def visualize_model_performance(results, with_fs):
         regression_data = df_performance[df_performance['Model Type'] == 'regression']
         suffix = "with_fs" if with_fs else "without_fs"
 
-        for metric in ['R2', 'RMSE', 'MSE', 'MAE']:
+        for metric in ['R2', 'RMSE', 'MSE', 'MAE', 'MAPE']:
             plt.figure(figsize=(12, 6))
             sns.barplot(x='Model', y=metric, data=regression_data)
             plt.title(f'{metric} Comparison - Regression Models', fontsize=14)
@@ -47,7 +47,7 @@ def visualize_model_performance(results, with_fs):
 
     # Heatmap of normalized metrics
     heatmap_data = df_performance.set_index('Model').drop(columns='Model Type')
-    existing_metrics = [col for col in ['R2', 'RMSE', 'MSE', 'MAE'] if col in heatmap_data.columns]
+    existing_metrics = [col for col in ['R2', 'RMSE', 'MSE', 'MAE', 'MAPE'] if col in heatmap_data.columns]
     heatmap_data = heatmap_data[existing_metrics]
 
     normalized_data = (heatmap_data - heatmap_data.min()) / (heatmap_data.max() - heatmap_data.min())
@@ -65,5 +65,48 @@ def visualize_model_performance(results, with_fs):
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir, 'model_performance_heatmap.png'), dpi=300)
     plt.close()
+
+    # Save CV test metrics to CSV
+    csv_path = os.path.join(plot_dir, 'cv_test_metrics.csv')
+    df_performance.to_csv(csv_path, index=False)
+    print(f"CV test metrics saved: {csv_path}")
+
+    # Normalized grouped bar chart (error metrics only)
+    if 'regression' in results:
+        regression_data = df_performance[df_performance['Model Type'] == 'regression'].copy()
+        suffix = "with_fs" if with_fs else "without_fs"
+        error_metrics = ['RMSE', 'MSE', 'MAE', 'MAPE']
+        models = regression_data['Model'].tolist()
+
+        norm_data = {}
+        for metric in error_metrics:
+            vals = regression_data[metric].values
+            min_v, max_v = vals.min(), vals.max()
+            if max_v == min_v:
+                norm_data[metric] = np.zeros(len(vals))
+            else:
+                norm_data[metric] = (vals - min_v) / (max_v - min_v) * 100
+
+        x = np.arange(len(models))
+        width = 0.18
+        colors = ['#1f77b4', '#2ca02c', '#ff7f0e', '#d62728']
+
+        fig, ax = plt.subplots(figsize=(12, 7))
+        for i, (metric, color) in enumerate(zip(error_metrics, colors)):
+            offset = (i - 1.5) * width
+            ax.bar(x + offset, norm_data[metric], width, label=metric, color=color)
+            min_norm = norm_data[metric].min()
+            ax.axhline(y=min_norm, color=color, linestyle='--', linewidth=1, alpha=0.6)
+
+        ax.set_xlabel('Model', fontsize=12)
+        ax.set_ylabel('Normalized Metric Value', fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(models, fontsize=11)
+        ax.set_ylim(0, 105)
+        ax.legend(title='Metric', loc='upper right', fontsize=10)
+        ax.grid(axis='y', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(plot_dir, f'normalized_error_metrics_{suffix}.png'), dpi=300, bbox_inches='tight')
+        plt.close()
 
     return df_performance

@@ -8,10 +8,10 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 
 def get_parameters():
     return {
-        'n_estimators': [i * 100 for i in range(1, 9)],
-        'max_depth': [None, 10, 20, 30, 40],
-        'min_samples_split': [2, 5, 10, 15, 20],
-        'min_samples_leaf': [1, 2, 4, 6, 8, 10]
+        'n_estimators': [100, 300, 500],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4]
     }
 
 

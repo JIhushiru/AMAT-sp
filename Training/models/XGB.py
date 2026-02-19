@@ -8,14 +8,14 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 
 def get_parameters():
     return {
-        'n_estimators': [100, 200],
-        'max_depth': [3, 6, 9],
-        'learning_rate': [0.05, 0.1, 0.2],
-        'subsample': [0.6, 0.8],
+        'n_estimators': [100, 300, 500],
+        'max_depth': [3, 6],
+        'learning_rate': [0.01, 0.05, 0.1],
+        'subsample': [0.8, 1.0],
         'colsample_bytree': [0.8, 1.0],
-        'gamma': [0, 1],
+        'gamma': [0, 0.1, 1],
         'reg_alpha': [0, 0.1],
-        'reg_lambda': [1, 2.0]
+        'reg_lambda': [1, 2]
     }
 
 
