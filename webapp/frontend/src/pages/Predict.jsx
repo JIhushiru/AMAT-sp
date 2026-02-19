@@ -363,7 +363,7 @@ export default function Predict() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-700 mb-4">Prediction Result</h3>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
                   <p className="text-sm text-emerald-600 font-medium">Predicted Yield</p>
                   <p className="text-3xl font-bold text-emerald-700 mt-1">
@@ -371,6 +371,15 @@ export default function Predict() {
                   </p>
                   <p className="text-xs text-emerald-500 mt-1">metric tons / hectare</p>
                 </div>
+                {prediction.confidence_interval && (
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <p className="text-sm text-blue-600 font-medium">{prediction.confidence_interval.level} CI</p>
+                    <p className="text-lg font-bold text-blue-700 mt-1">
+                      {prediction.confidence_interval.lower.toFixed(2)} – {prediction.confidence_interval.upper.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-blue-500 mt-1">RMSE: {prediction.rmse?.toFixed(2)} t/ha</p>
+                  </div>
+                )}
                 <StatCard
                   label="National Average"
                   value={`${prediction.context.national_avg} t/ha`}

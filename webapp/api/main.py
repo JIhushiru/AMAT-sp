@@ -533,11 +533,24 @@ def predict_yield(req: PredictRequest):
     national_min = round(float(df["yield"].min()), 2)
     national_max = round(float(df["yield"].max()), 2)
 
+    # Compute RMSE on training data for confidence interval
+    train_X = df[expected_features].copy()
+    train_X_scaled = pd.DataFrame(scaler.transform(train_X), columns=expected_features)
+    train_preds = model.predict(train_X_scaled)
+    residuals = df["yield"].values - train_preds
+    rmse = float(np.sqrt(np.mean(residuals ** 2)))
+
     return {
         "predicted_yield": round(prediction, 4),
         "model_used": artifact.get("rank", 0),
         "model_name": req.model_key or f"rank{artifact.get('rank', '?')}",
         "cv_r2": round(artifact.get("cv_avg_r2", 0), 4),
+        "rmse": round(rmse, 4),
+        "confidence_interval": {
+            "lower": round(max(0, prediction - 1.96 * rmse), 4),
+            "upper": round(prediction + 1.96 * rmse, 4),
+            "level": "95%",
+        },
         "context": {
             "national_avg": national_avg,
             "national_min": national_min,
