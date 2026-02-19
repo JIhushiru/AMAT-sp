@@ -1,5 +1,4 @@
 import { useFetch, StatCard, Loader, ErrorBox } from '../hooks'
-import { Link } from 'react-router-dom'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, Cell,
@@ -140,24 +139,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Links — unified subtle design */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {[
-          { to: '/map', label: 'Interactive Map' },
-          { to: '/historical', label: 'Explore Data' },
-          { to: '/models', label: 'Model Results' },
-          { to: '/ssp', label: 'SSP Scenarios' },
-          { to: '/predict', label: 'Predict Yield' },
-        ].map(({ to, label }) => (
-          <Link
-            key={to}
-            to={to}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 text-center hover:border-emerald-500 hover:shadow-md dark:hover:border-emerald-500 transition text-sm md:text-base text-gray-700 dark:text-gray-200 font-medium"
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
     </div>
   )
 }
