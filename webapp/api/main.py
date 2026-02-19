@@ -534,13 +534,16 @@ def predict_yield(req: PredictRequest):
     national_max = round(float(df["yield"].max()), 2)
 
     # Compute RMSE on training data for confidence interval
-    train_X = df[expected_features].copy()
-    train_X_scaled = pd.DataFrame(scaler.transform(train_X), columns=expected_features)
-    train_preds = model.predict(train_X_scaled)
-    residuals = df["yield"].values - train_preds
-    rmse = float(np.sqrt(np.mean(residuals ** 2)))
+    try:
+        train_X = df[expected_features].copy()
+        train_X_scaled = pd.DataFrame(scaler.transform(train_X), columns=expected_features)
+        train_preds = model.predict(train_X_scaled)
+        residuals = df["yield"].values - train_preds
+        rmse = float(np.sqrt(np.mean(residuals ** 2)))
+    except Exception:
+        rmse = 0.0
 
-    return {
+    return _sanitize({
         "predicted_yield": round(prediction, 4),
         "model_used": artifact.get("rank", 0),
         "model_name": req.model_key or f"rank{artifact.get('rank', '?')}",
@@ -556,7 +559,7 @@ def predict_yield(req: PredictRequest):
             "national_min": national_min,
             "national_max": national_max,
         },
-    }
+    })
 
 
 @app.post("/api/predict/batch")
@@ -622,12 +625,12 @@ def batch_predict(req: BatchPredictRequest):
                 "predicted_yield": round(float(preds[i]), 4),
             })
 
-        return {
+        return _sanitize({
             "predictions": results,
             "model_name": f"rank{artifact.get('rank', '?')}",
             "scenario": req.scenario,
             "count": len(results),
-        }
+        })
 
     # If no scenario, predict using historical averages per province
     df = safe_read_excel(TRAINING_DATA)
@@ -649,11 +652,11 @@ def batch_predict(req: BatchPredictRequest):
             "predicted_yield": round(float(preds[i]), 4),
         })
 
-    return {
+    return _sanitize({
         "predictions": results,
         "model_name": f"rank{artifact.get('rank', '?')}",
         "count": len(results),
-    }
+    })
 
 
 @app.post("/api/predict/reload-models")

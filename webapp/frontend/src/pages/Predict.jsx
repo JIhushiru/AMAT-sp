@@ -96,8 +96,9 @@ export default function Predict() {
         }),
       })
       if (!resp.ok) {
-        const err = await resp.json()
-        throw new Error(err.detail || `HTTP ${resp.status}`)
+        let msg = `HTTP ${resp.status}`
+        try { const err = await resp.json(); msg = err.detail || msg } catch {}
+        throw new Error(msg)
       }
       const data = await resp.json()
       setPrediction(data)
@@ -124,8 +125,9 @@ export default function Predict() {
         }),
       })
       if (!resp.ok) {
-        const err = await resp.json()
-        throw new Error(err.detail || `HTTP ${resp.status}`)
+        let msg = `HTTP ${resp.status}`
+        try { const err = await resp.json(); msg = err.detail || msg } catch {}
+        throw new Error(msg)
       }
       const data = await resp.json()
       setBatchResults(data)
