@@ -86,7 +86,7 @@ export default function App() {
       <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-5 text-center space-y-1">
           <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-            Geospatial Machine Learning for Predicting Banana Yield Gaps in the Philippines Under Climate Uncertainty
+            Geospatial Machine Learning for Predicting Banana Yield in the Philippines Under Climate Uncertainty
           </p>
           <p className="text-[11px] text-gray-400 dark:text-gray-500">
             Institute of Mathematical Sciences &middot; College of Arts and Sciences &middot; University of the Philippines Los Ba&ntilde;os
