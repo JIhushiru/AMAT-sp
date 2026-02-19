@@ -170,23 +170,29 @@ export default function MapView() {
 
       {showStatic ? (
         <div className="space-y-6">
-          {[
-            { key: 'historical', title: 'Historical (2010\u20132024)' },
-            { key: 'ssp245', title: 'SSP2-4.5 Projected (2025\u20132034)' },
-            { key: 'ssp585', title: 'SSP5-8.5 Projected (2025\u20132034)' },
-          ].map(({ key, title }) => {
-            const imgs = mapImages?.filter((img) => (img.category || 'historical') === key)
-            if (!imgs?.length) return null
+          {(() => {
+            const layerConfig = {
+              historical: { title: 'Historical (2010\u20132024)' },
+              ssp245: { title: 'SSP2-4.5 Projected (2025\u20132034)' },
+              ssp585: { title: 'SSP5-8.5 Projected (2025\u20132034)' },
+            }
+            const cfg = layerConfig[dataLayer]
+            const imgs = mapImages?.filter((img) => (img.category || 'historical') === dataLayer)
+            if (!imgs?.length) return (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
+                <p className="text-sm">No static maps available for {cfg.title}. Generate choropleth maps first.</p>
+              </div>
+            )
             return (
-              <div key={key}>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">{title}</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">{cfg.title}</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   {imgs.map((img) => (
                     <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                       <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">{img.label}</h4>
                       <img
                         src={`${API_BASE}/map/image/${img.name}`}
-                        alt={`${title} - ${img.label}`}
+                        alt={`${cfg.title} - ${img.label}`}
                         className="w-full rounded"
                       />
                     </div>
@@ -194,7 +200,7 @@ export default function MapView() {
                 </div>
               </div>
             )
-          })}
+          })()}
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative h-100 md:h-150">
