@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
 
 const YIELD_BINS = [
-  { min: 0, max: 15, color: '#fde725', label: '0-15' },
-  { min: 15, max: 30, color: '#5ec962', label: '15-30' },
-  { min: 30, max: 46, color: '#21918c', label: '30-46' },
-  { min: 46, max: 61, color: '#3b528b', label: '46-61' },
-  { min: 61, max: 100, color: '#440154', label: '61-100' },
+  { min: 0, max: 15, color: '#fde725', label: '0\u201315' },
+  { min: 15, max: 30, color: '#5ec962', label: '15\u201330' },
+  { min: 30, max: 46, color: '#21918c', label: '30\u201346' },
+  { min: 46, max: 61, color: '#3b528b', label: '46\u201361' },
+  { min: 61, max: 100, color: '#440154', label: '61\u2013100' },
 ]
 
 function getColor(val) {
@@ -27,7 +27,7 @@ export default function MapView() {
   const { data: ssp585Data } = useFetch('/ssp/ssp585')
 
   const [selectedYear, setSelectedYear] = useState('average')
-  const [dataLayer, setDataLayer] = useState('historical') // 'historical', 'ssp245', 'ssp585'
+  const [dataLayer, setDataLayer] = useState('historical')
   const [hoveredProvince, setHoveredProvince] = useState(null)
   const [showStatic, setShowStatic] = useState(false)
   const navigate = useNavigate()
@@ -45,7 +45,6 @@ export default function MapView() {
     years.push(...[...allYears].sort())
   }
 
-  // Build SSP province averages from province_summary data
   function getSSPYield(provinceName, sspData) {
     if (!sspData?.province_summary) return 0
     const entry = sspData.province_summary[provinceName]
@@ -74,7 +73,7 @@ export default function MapView() {
       fillColor: getColor(val),
       weight: 1,
       opacity: 1,
-      color: '#333',
+      color: '#666',
       fillOpacity: 0.8,
     }
   }
@@ -83,7 +82,7 @@ export default function MapView() {
     const name = feature.properties.name
     const val = getYield(name)
     const layerLabel = dataLayer === 'historical'
-      ? (selectedYear === 'average' ? 'Avg (2010-2024)' : selectedYear)
+      ? (selectedYear === 'average' ? 'Avg (2010\u20132024)' : selectedYear)
       : dataLayer === 'ssp245' ? 'SSP2-4.5 Projected' : 'SSP5-8.5 Projected'
     layer.bindTooltip(
       `<strong>${name}</strong><br/>${layerLabel}: ${val ? val.toFixed(2) + ' t/ha' : 'No data'}`,
@@ -102,62 +101,67 @@ export default function MapView() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Map</h2>
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Data layer selector */}
-          <div className="flex rounded overflow-hidden border dark:border-gray-600 text-sm">
-            <button
-              onClick={() => setDataLayer('historical')}
-              className={`px-3 py-1.5 ${dataLayer === 'historical' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-            >
-              Historical
-            </button>
-            {ssp245Available && (
+      <div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Map</h2>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 text-sm">
               <button
-                onClick={() => setDataLayer('ssp245')}
-                className={`px-3 py-1.5 border-l dark:border-gray-600 ${dataLayer === 'ssp245' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
+                onClick={() => setDataLayer('historical')}
+                className={`px-3 py-1.5 font-medium text-xs transition ${dataLayer === 'historical' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
               >
-                SSP2-4.5
+                Historical
               </button>
-            )}
-            {ssp585Available && (
-              <button
-                onClick={() => setDataLayer('ssp585')}
-                className={`px-3 py-1.5 border-l dark:border-gray-600 ${dataLayer === 'ssp585' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-              >
-                SSP5-8.5
-              </button>
-            )}
-          </div>
+              {ssp245Available && (
+                <button
+                  onClick={() => setDataLayer('ssp245')}
+                  className={`px-3 py-1.5 font-medium text-xs border-l border-gray-300 dark:border-gray-600 transition ${dataLayer === 'ssp245' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
+                >
+                  SSP2-4.5
+                </button>
+              )}
+              {ssp585Available && (
+                <button
+                  onClick={() => setDataLayer('ssp585')}
+                  className={`px-3 py-1.5 font-medium text-xs border-l border-gray-300 dark:border-gray-600 transition ${dataLayer === 'ssp585' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
+                >
+                  SSP5-8.5
+                </button>
+              )}
+            </div>
 
-          {dataLayer === 'historical' && (
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="border dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            {dataLayer === 'historical' && (
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500"
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y === 'average' ? 'Average (2010\u20132024)' : y}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={() => setShowStatic(!showStatic)}
+              className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition border border-gray-300 dark:border-gray-600"
             >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y === 'average' ? 'Average (2010-2024)' : y}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            onClick={() => setShowStatic(!showStatic)}
-            className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700"
-          >
-            {showStatic ? 'Interactive Map' : 'Static Maps'}
-          </button>
+              {showStatic ? 'Interactive Map' : 'Static Maps'}
+            </button>
+          </div>
         </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
+          Choropleth map of banana yield (t/ha) across Philippine provinces.
+          Province boundaries from GADM shapefiles. Click any province for detailed data.
+        </p>
       </div>
 
       {showStatic ? (
         <div className="grid md:grid-cols-2 gap-4">
           {mapImages?.map((img) => (
-            <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg shadow p-3">
-              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{img.label}</h3>
+            <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200 mb-2">{img.label}</h3>
               <img
                 src={`${API_BASE}/map/image/${img.name}`}
                 alt={img.label}
@@ -167,7 +171,7 @@ export default function MapView() {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden relative h-100 md:h-150">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative h-100 md:h-150">
           {geojson && (
             <MapContainer
               center={[12.5, 122]}
@@ -188,18 +192,17 @@ export default function MapView() {
             </MapContainer>
           )}
 
-          {/* Legend */}
-          <div className="absolute bottom-6 left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-1000">
-            <p className="text-xs font-semibold mb-1.5 text-gray-800 dark:text-gray-200">
+          <div className="absolute bottom-6 left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-1000 border border-gray-200 dark:border-gray-700">
+            <p className="text-[10px] font-semibold mb-1.5 text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               Yield (t/ha)
               {dataLayer !== 'historical' && (
-                <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">
-                  — {dataLayer === 'ssp245' ? 'SSP2-4.5' : 'SSP5-8.5'}
+                <span className="ml-1 font-normal normal-case text-gray-400 dark:text-gray-500">
+                  &mdash; {dataLayer === 'ssp245' ? 'SSP2-4.5' : 'SSP5-8.5'}
                 </span>
               )}
             </p>
             {YIELD_BINS.map((bin) => (
-              <div key={bin.label} className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+              <div key={bin.label} className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-300">
                 <span
                   className="w-4 h-3 inline-block rounded-sm"
                   style={{ backgroundColor: bin.color }}
@@ -207,7 +210,7 @@ export default function MapView() {
                 {bin.label}
               </div>
             ))}
-            <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+            <div className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-300">
               <span className="w-4 h-3 inline-block rounded-sm bg-gray-300 dark:bg-gray-600" />
               No data
             </div>
@@ -216,8 +219,8 @@ export default function MapView() {
       )}
 
       {hoveredProvince && (
-        <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-50 border dark:border-gray-700">
-          <p className="font-semibold text-gray-800 dark:text-gray-100">{hoveredProvince.name}</p>
+        <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-50 border border-gray-200 dark:border-gray-700">
+          <p className="font-semibold text-sm text-gray-800 dark:text-gray-100">{hoveredProvince.name}</p>
           <p className="text-emerald-700 dark:text-emerald-400 font-bold">
             {hoveredProvince.yield
               ? `${hoveredProvince.yield.toFixed(2)} t/ha`

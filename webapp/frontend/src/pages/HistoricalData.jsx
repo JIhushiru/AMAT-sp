@@ -56,16 +56,24 @@ export default function HistoricalData() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Historical Data Explorer</h2>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Historical Data Explorer</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
+          Banana crop yield collected from the Philippine Statistics Authority (PSA),
+          covering {summary?.total_provinces || 82} provinces from 2010 to 2024. Climate
+          and environmental variables extracted from CRU-TS and TerraClimate gridded
+          datasets, aggregated at the province level.
+        </p>
+      </div>
 
       <CollapsibleSection title="National Average Yield Trend">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis domain={['auto', 'auto']} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </CollapsibleSection>
@@ -76,7 +84,7 @@ export default function HistoricalData() {
           <select
             value={selectedFeature}
             onChange={(e) => setSelectedFeature(e.target.value)}
-            className="border dark:border-gray-600 rounded px-3 py-1 text-sm bg-white dark:bg-gray-700 dark:text-gray-200"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500"
           >
             {climate?.features?.map((f) => (
               <option key={f} value={f}>
@@ -88,22 +96,22 @@ export default function HistoricalData() {
       >
         <ResponsiveContainer width="100%" height={300}>
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
-              dataKey="x" type="number"
-              label={{ value: FEATURE_LABELS[selectedFeature] || selectedFeature, position: 'insideBottom', offset: -5 }}
+              dataKey="x" type="number" tick={{ fontSize: 11 }}
+              label={{ value: FEATURE_LABELS[selectedFeature] || selectedFeature, position: 'insideBottom', offset: -5, style: { fontSize: 11 } }}
             />
-            <YAxis dataKey="y" type="number" label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
+            <YAxis dataKey="y" type="number" tick={{ fontSize: 11 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
             <ZAxis range={[20, 20]} />
             <Tooltip
               content={({ payload }) => {
                 if (!payload?.[0]) return null
                 const d = payload[0].payload
                 return (
-                  <div className="bg-white dark:bg-gray-800 border dark:border-gray-600 rounded p-2 text-xs shadow">
-                    <p className="font-semibold dark:text-gray-200">{d.province}</p>
-                    <p className="dark:text-gray-300">{selectedFeature}: {d.x?.toFixed(2)}</p>
-                    <p className="dark:text-gray-300">Yield: {d.y?.toFixed(2)} t/ha</p>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md p-2 text-xs shadow-lg">
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{d.province}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{selectedFeature}: {d.x?.toFixed(2)}</p>
+                    <p className="text-gray-600 dark:text-gray-300">Yield: {d.y?.toFixed(2)} t/ha</p>
                   </div>
                 )
               }}
@@ -115,17 +123,20 @@ export default function HistoricalData() {
 
       {yieldCorrelations.length > 0 && (
         <CollapsibleSection title="Feature Correlation with Yield" defaultOpen={false} badge={`${yieldCorrelations.length} features`}>
-          <div className="space-y-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Pearson correlation coefficients between each climate variable and banana yield.
+          </p>
+          <div className="space-y-1.5">
             {yieldCorrelations.map(({ feature, corr }) => (
               <div key={feature} className="flex items-center gap-3">
-                <span className="text-sm w-28 text-right font-mono dark:text-gray-300">{feature}</span>
-                <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 relative">
+                <span className="text-xs w-28 text-right font-mono text-gray-600 dark:text-gray-300">{feature}</span>
+                <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-4 relative">
                   <div
-                    className={`h-5 rounded-full ${corr >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
+                    className={`h-4 rounded-full ${corr >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
                     style={{ width: `${Math.abs(corr) * 100}%` }}
                   />
                 </div>
-                <span className={`text-sm font-mono w-16 ${corr >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                <span className={`text-xs font-mono w-16 ${corr >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                   {corr.toFixed(3)}
                 </span>
               </div>
@@ -135,7 +146,8 @@ export default function HistoricalData() {
       )}
 
       <CollapsibleSection
-        title={`Province Avg Yield (${summary?.total_provinces} provinces)`}
+        title={`Province Average Yield`}
+        badge={`${summary?.total_provinces} provinces`}
         actions={
           <div className="flex items-center gap-2">
             <ExportButton
@@ -147,7 +159,7 @@ export default function HistoricalData() {
               placeholder="Search province..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border dark:border-gray-600 rounded px-3 py-1 text-sm w-48 bg-white dark:bg-gray-700 dark:text-gray-200"
+              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 text-sm w-48 bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         }
@@ -156,26 +168,26 @@ export default function HistoricalData() {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="text-left p-2 dark:text-gray-300">#</th>
-                <th className="text-left p-2 dark:text-gray-300">Province</th>
-                <th className="text-right p-2 dark:text-gray-300">Avg Yield (t/ha)</th>
+                <th className="text-left p-2 text-gray-500 dark:text-gray-400">#</th>
+                <th className="text-left p-2 text-gray-500 dark:text-gray-400">Province</th>
+                <th className="text-right p-2 text-gray-500 dark:text-gray-400">Avg Yield (t/ha)</th>
                 <th className="p-2"></th>
               </tr>
             </thead>
             <tbody>
               {provinces.map(([name, val], i) => (
-                <tr key={name} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="p-2 text-gray-400">{i + 1}</td>
-                  <td className="p-2 font-medium dark:text-gray-200">{name}</td>
+                <tr key={name} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td className="p-2 text-gray-400 text-xs">{i + 1}</td>
+                  <td className="p-2 font-medium text-gray-700 dark:text-gray-200">{name}</td>
                   <td className="p-2 text-right font-mono text-emerald-700 dark:text-emerald-400">
                     {val.toFixed(2)}
                   </td>
                   <td className="p-2">
                     <Link
                       to={`/province/${encodeURIComponent(name)}`}
-                      className="text-blue-600 dark:text-blue-400 hover:underline text-xs"
+                      className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs font-medium"
                     >
-                      View
+                      Details
                     </Link>
                   </td>
                 </tr>
@@ -187,27 +199,30 @@ export default function HistoricalData() {
 
       {climate && (
         <CollapsibleSection title="Climate Feature Statistics" defaultOpen={false} badge="17 features">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Descriptive statistics of the 17 climate and environmental variables used as predictors.
+          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-left p-2 dark:text-gray-300">Feature</th>
-                  <th className="text-left p-2 dark:text-gray-300">Description</th>
-                  <th className="text-right p-2 dark:text-gray-300">Mean</th>
-                  <th className="text-right p-2 dark:text-gray-300">Std</th>
-                  <th className="text-right p-2 dark:text-gray-300">Min</th>
-                  <th className="text-right p-2 dark:text-gray-300">Max</th>
+                  <th className="text-left p-2 text-gray-500 dark:text-gray-400">Feature</th>
+                  <th className="text-left p-2 text-gray-500 dark:text-gray-400">Description</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Mean</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Std</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Min</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Max</th>
                 </tr>
               </thead>
               <tbody>
                 {climate.features.map((f) => (
-                  <tr key={f} className="border-t dark:border-gray-700">
-                    <td className="p-2 font-mono dark:text-gray-200">{f}</td>
-                    <td className="p-2 text-gray-600 dark:text-gray-400">{FEATURE_LABELS[f] || f}</td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">{climate.stats[f].mean}</td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">{climate.stats[f].std}</td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">{climate.stats[f].min}</td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">{climate.stats[f].max}</td>
+                  <tr key={f} className="border-t border-gray-100 dark:border-gray-700">
+                    <td className="p-2 font-mono text-gray-700 dark:text-gray-200">{f}</td>
+                    <td className="p-2 text-gray-500 dark:text-gray-400">{FEATURE_LABELS[f] || f}</td>
+                    <td className="p-2 text-right font-mono text-gray-700 dark:text-gray-300">{climate.stats[f].mean}</td>
+                    <td className="p-2 text-right font-mono text-gray-700 dark:text-gray-300">{climate.stats[f].std}</td>
+                    <td className="p-2 text-right font-mono text-gray-700 dark:text-gray-300">{climate.stats[f].min}</td>
+                    <td className="p-2 text-right font-mono text-gray-700 dark:text-gray-300">{climate.stats[f].max}</td>
                   </tr>
                 ))}
               </tbody>

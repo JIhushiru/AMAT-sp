@@ -25,7 +25,6 @@ export default function ProvinceDetail() {
     ? Object.entries(data.trend).map(([y, v]) => ({ year: +y, yield: v }))
     : []
 
-  // Radar chart: normalized feature values for this province
   const features = climate?.features || []
   const radarData = features.map((f) => {
     const vals = data.data.map((r) => r[f]).filter((v) => v != null)
@@ -46,15 +45,21 @@ export default function ProvinceDetail() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link to="/historical" className="text-emerald-600 dark:text-emerald-400 hover:underline text-sm">
-          &larr; Back
+        <Link to="/historical" className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs font-medium">
+          &larr; Back to Historical Data
         </Link>
+      </div>
+
+      <div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{name}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Province-level yield and climate data from the historical dataset (2010&ndash;2024)
+        </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Avg Yield" value={`${data.avg_yield} t/ha`} />
-        <StatCard label="Data Points" value={data.data.length} sub="year records" />
+        <StatCard label="Data Points" value={data.data.length} sub="Year records" />
         <StatCard
           label="Min Yield"
           value={`${yieldMin.toFixed(2)} t/ha`}
@@ -65,26 +70,30 @@ export default function ProvinceDetail() {
         />
       </div>
 
-      {/* Yield Trend */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Yield Trend</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Yield Trend</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Annual banana yield for {name} (2010&ndash;2024)
+        </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis domain={['auto', 'auto']} label={{ value: 't/ha', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 't/ha', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Climate Profile Radar */}
       {radarData.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
-            Climate Profile (Normalized)
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
+            Climate Profile
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Normalized province averages relative to the national range for each climate variable
+          </p>
           <ResponsiveContainer width="100%" height={400}>
             <RadarChart data={radarData}>
               <PolarGrid />
@@ -95,17 +104,17 @@ export default function ProvinceDetail() {
                 dataKey="value"
                 stroke="#059669"
                 fill="#059669"
-                fillOpacity={0.3}
+                fillOpacity={0.25}
               />
               <Tooltip
                 content={({ payload }) => {
                   if (!payload?.[0]) return null
                   const d = payload[0].payload
                   return (
-                    <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded p-2 text-xs shadow">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-2 text-xs shadow-lg">
                       <p className="font-semibold text-gray-800 dark:text-gray-100">{d.feature}</p>
-                      <p className="text-gray-600 dark:text-gray-400">Raw value: {d.raw}</p>
-                      <p className="text-gray-600 dark:text-gray-400">Normalized: {d.value.toFixed(0)}%</p>
+                      <p className="text-gray-500 dark:text-gray-400">Raw value: {d.raw}</p>
+                      <p className="text-gray-500 dark:text-gray-400">Normalized: {d.value.toFixed(0)}%</p>
                     </div>
                   )
                 }}
@@ -115,17 +124,19 @@ export default function ProvinceDetail() {
         </div>
       )}
 
-      {/* Raw Data Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Raw Data</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Raw Data</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Year-by-year yield and climate feature values for {name}
+        </p>
         <div className="overflow-x-auto">
           <table className="text-xs w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="p-1.5 text-left text-gray-600 dark:text-gray-300">Year</th>
-                <th className="p-1.5 text-right text-gray-600 dark:text-gray-300">Yield</th>
+                <th className="p-1.5 text-left text-gray-500 dark:text-gray-400">Year</th>
+                <th className="p-1.5 text-right text-gray-500 dark:text-gray-400">Yield</th>
                 {features.map((f) => (
-                  <th key={f} className="p-1.5 text-right text-gray-600 dark:text-gray-300">{f}</th>
+                  <th key={f} className="p-1.5 text-right text-gray-500 dark:text-gray-400">{f}</th>
                 ))}
               </tr>
             </thead>
@@ -133,14 +144,14 @@ export default function ProvinceDetail() {
               {data.data
                 .sort((a, b) => a.year - b.year)
                 .map((row) => (
-                  <tr key={row.year} className="border-t dark:border-gray-700">
-                    <td className="p-1.5 font-medium text-gray-800 dark:text-gray-200">{row.year}</td>
+                  <tr key={row.year} className="border-t border-gray-100 dark:border-gray-700">
+                    <td className="p-1.5 font-medium text-gray-700 dark:text-gray-200">{row.year}</td>
                     <td className="p-1.5 text-right font-mono text-emerald-700 dark:text-emerald-400">
                       {row.yield?.toFixed(2)}
                     </td>
                     {features.map((f) => (
-                      <td key={f} className="p-1.5 text-right font-mono text-gray-700 dark:text-gray-300">
-                        {row[f]?.toFixed(2) ?? '-'}
+                      <td key={f} className="p-1.5 text-right font-mono text-gray-600 dark:text-gray-300">
+                        {row[f]?.toFixed(2) ?? '\u2013'}
                       </td>
                     ))}
                   </tr>

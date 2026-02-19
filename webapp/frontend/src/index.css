@@ -4,7 +4,9 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .leaflet-container {
@@ -20,4 +22,11 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Refined table styling */
+table thead th {
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
 }

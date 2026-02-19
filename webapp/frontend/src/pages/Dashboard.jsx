@@ -43,39 +43,49 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard</h2>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
+          Overview of banana yield across 82 Philippine provinces using historical production
+          data (2010&ndash;2024) from PSA and climate variables from CRU-TS,
+          TerraClimate, and NASA NEX-GDDP-CMIP6. Future projections
+          (2025&ndash;2034) are generated under SSP2-4.5 and SSP5-8.5 scenarios
+          using a five-model CMIP6 ensemble.
+        </p>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="National Avg Yield" value={`${h.national_avg} t/ha`} />
         <StatCard label="Provinces" value={h.total_provinces} />
         <StatCard
           label="Year Range"
-          value={`${h.year_range[0]}-${h.year_range[1]}`}
+          value={`${h.year_range[0]}\u2013${h.year_range[1]}`}
         />
         <StatCard
-          label="SSP Data"
-          value={data.ssp245_available || data.ssp585_available ? 'Available' : 'Not Yet'}
+          label="SSP Projections"
+          value={data.ssp245_available || data.ssp585_available ? 'Available' : 'Pending'}
           sub={
             data.ssp245_available
               ? 'SSP2-4.5 & SSP5-8.5'
-              : 'Run SSP pipeline to generate'
+              : 'Run pipeline to generate'
           }
         />
       </div>
 
-      {/* National Yield Trend */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
-          National Yield Trend (2010-2024
-          {data.ssp245_available ? ' + SSP Projections 2025-2034' : ''})
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
+          National Yield Trend
         </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Historical (2010&ndash;2024){data.ssp245_available ? ' and SSP projections (2025\u20132034)' : ''}
+        </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis domain={['auto', 'auto']} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone" dataKey="yield" stroke="#059669"
               strokeWidth={2} name="Historical" dot={{ r: 3 }}
@@ -98,19 +108,19 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* Top & Bottom Provinces */}
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
             Top 5 Provinces by Yield
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Average yield (2010&ndash;2024)</p>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={topProvinces} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: 't/ha', position: 'insideBottom', offset: -5 }} />
-              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="yield" name="Avg Yield">
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
+              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {topProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_TOP[i]} />
                 ))}
@@ -119,17 +129,18 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
             Bottom 5 Provinces by Yield
           </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Average yield (2010&ndash;2024)</p>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={bottomProvinces} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: 't/ha', position: 'insideBottom', offset: -5 }} />
-              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="yield" name="Avg Yield">
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
+              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {bottomProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_BOT[i]} />
                 ))}
@@ -138,7 +149,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
-
     </div>
   )
 }

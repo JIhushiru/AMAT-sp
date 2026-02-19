@@ -9,13 +9,13 @@ import {
 const API = (import.meta.env.VITE_API_URL || '') + '/api'
 
 const FEATURE_LABELS = {
-  tmp: 'Mean Temp (°C)', tmx: 'Max Temp (°C)', tmn: 'Min Temp (°C)',
-  dtr: 'Diurnal Temp Range (°C)', pre: 'Precipitation (mm)',
+  tmp: 'Mean Temp (\u00b0C)', tmx: 'Max Temp (\u00b0C)', tmn: 'Min Temp (\u00b0C)',
+  dtr: 'Diurnal Temp Range (\u00b0C)', pre: 'Precipitation (mm)',
   pet: 'Potential ET (mm)', aet: 'Actual ET (mm)', def: 'Water Deficit (mm)',
   cld: 'Cloud Cover (%)', wet: 'Wet Days', vap: 'Vapor Pressure (kPa)',
   vpd: 'Vapor Pressure Deficit (kPa)', PDSI: 'Palmer Drought Index',
   q: 'Specific Humidity (kg/kg)', soil: 'Soil Moisture',
-  srad: 'Solar Radiation (W/m²)', ws: 'Wind Speed (m/s)',
+  srad: 'Solar Radiation (W/m\u00b2)', ws: 'Wind Speed (m/s)',
 }
 
 const FEATURE_GROUPS = {
@@ -37,7 +37,6 @@ export default function Predict() {
   const [predicting, setPredicting] = useState(false)
   const [predError, setPredError] = useState(null)
 
-  // Batch prediction state
   const [batchMode, setBatchMode] = useState(false)
   const [batchScenario, setBatchScenario] = useState('ssp245')
   const [batchYear, setBatchYear] = useState(2025)
@@ -46,7 +45,6 @@ export default function Predict() {
   const [batchPredicting, setBatchPredicting] = useState(false)
   const [batchError, setBatchError] = useState(null)
 
-  // Initialize feature values with means when data loads
   useEffect(() => {
     if (featureData?.stats && Object.keys(featureValues).length === 0) {
       const defaults = {}
@@ -57,7 +55,6 @@ export default function Predict() {
     }
   }, [featureData])
 
-  // Set default model
   useEffect(() => {
     if (modelData?.models?.length && !selectedModel) {
       setSelectedModel(modelData.models[0].key)
@@ -153,7 +150,6 @@ export default function Predict() {
     }
   }
 
-  // Grouped features for the form
   const groupedFeatures = useMemo(() => {
     if (!featureData?.features) return {}
     const groups = {}
@@ -173,22 +169,21 @@ export default function Predict() {
   if (mLoad || fLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (mErr) return <ErrorBox message={mErr} />
 
-  // No models available yet
   if (!modelData?.available) {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Prediction</h2>
         <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-6 text-yellow-800 dark:text-yellow-200">
-          <h3 className="font-semibold text-lg mb-2">Models Not Available Yet</h3>
-          <p className="mb-3">
+          <h3 className="font-semibold text-lg mb-2">Models Not Available</h3>
+          <p className="mb-3 text-sm">
             No trained models were found. The training pipeline needs to complete first.
           </p>
-          <p className="text-sm mb-4 text-yellow-700 dark:text-yellow-300">
+          <p className="text-xs mb-4 text-yellow-700 dark:text-yellow-300">
             After training finishes, models are saved to <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">Training/Models/top3/</code>.
           </p>
           <button
             onClick={handleReloadModels}
-            className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition text-sm font-medium"
+            className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition text-sm font-medium"
           >
             Check for Models
           </button>
@@ -197,7 +192,6 @@ export default function Predict() {
     )
   }
 
-  // Batch results charts
   const batchByProvince = batchResults?.predictions
     ? [...batchResults.predictions]
         .sort((a, b) => b.predicted_yield - a.predicted_yield)
@@ -211,47 +205,53 @@ export default function Predict() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Prediction</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setBatchMode(false)}
-            className={`px-4 py-2 rounded font-medium text-sm transition ${
-              !batchMode
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            Single Prediction
-          </button>
-          <button
-            onClick={() => setBatchMode(true)}
-            className={`px-4 py-2 rounded font-medium text-sm transition ${
-              batchMode
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            Batch / SSP Prediction
-          </button>
+      <div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Prediction</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setBatchMode(false)}
+              className={`px-4 py-1.5 rounded-md font-medium text-sm transition ${
+                !batchMode
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Single Prediction
+            </button>
+            <button
+              onClick={() => setBatchMode(true)}
+              className={`px-4 py-1.5 rounded-md font-medium text-sm transition ${
+                batchMode
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              Batch / SSP Prediction
+            </button>
+          </div>
         </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
+          Generate yield predictions using trained ML models. Single mode accepts custom
+          climate inputs; batch mode uses projected climate data from CMIP6 SSP scenarios.
+        </p>
       </div>
 
       {/* Model Selection */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Trained Models</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Select the model to use for prediction</p>
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Trained Models</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Select a model for prediction</p>
           </div>
           <button
             onClick={handleReloadModels}
-            className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline"
+            className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline font-medium"
           >
             Reload models
           </button>
         </div>
-        <div className="grid sm:grid-cols-3 gap-3 mt-3">
+        <div className="grid sm:grid-cols-3 gap-3 mt-4">
           {modelData.models.map((m) => (
             <button
               key={m.key}
@@ -263,8 +263,8 @@ export default function Predict() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-gray-800 dark:text-gray-100">{m.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                <span className="font-semibold text-sm text-gray-800 dark:text-gray-100">{m.name}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
                   m.rank === 1 ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' :
                   m.rank === 2 ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' :
                   'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300'
@@ -272,10 +272,10 @@ export default function Predict() {
                   #{m.rank}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                CV R² = {m.cv_r2}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                CV R&sup2; = {m.cv_r2}
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                 {m.features.length} features
               </p>
             </button>
@@ -284,15 +284,13 @@ export default function Predict() {
       </div>
 
       {!batchMode ? (
-        /* ====== SINGLE PREDICTION MODE ====== */
         <>
-          {/* Province Preset */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Climate Feature Inputs</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Enter climate values manually or load defaults from a province
+                <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Climate Feature Inputs</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Enter values manually or load province-level averages from the historical dataset
                 </p>
               </div>
               <div className="flex gap-2 items-center">
@@ -305,14 +303,13 @@ export default function Predict() {
                 />
                 <button
                   onClick={resetToMeans}
-                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline whitespace-nowrap"
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 underline whitespace-nowrap"
                 >
                   Reset to national means
                 </button>
               </div>
             </div>
 
-            {/* Feature input groups with accordions */}
             {groupEntries.map(([group, features], idx) => (
               <Accordion
                 key={group}
@@ -324,8 +321,8 @@ export default function Predict() {
                   {features.map((f) => {
                     const stat = featureData?.stats?.[f]
                     return (
-                      <div key={f} className="relative">
-                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                      <div key={f}>
+                        <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1">
                           {FEATURE_LABELS[f] || f}
                           <span className="text-gray-400 dark:text-gray-500 ml-1">({f})</span>
                         </label>
@@ -334,11 +331,11 @@ export default function Predict() {
                           step="any"
                           value={featureValues[f] ?? ''}
                           onChange={(e) => handleFeatureChange(f, e.target.value)}
-                          className="w-full border dark:border-gray-600 rounded px-3 py-1.5 text-sm font-mono bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm font-mono bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         />
                         {stat && (
                           <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-                            Range: {stat.min} – {stat.max} | Mean: {stat.mean}
+                            Range: {stat.min} &ndash; {stat.max} | Mean: {stat.mean}
                           </p>
                         )}
                       </div>
@@ -348,52 +345,49 @@ export default function Predict() {
               </Accordion>
             ))}
 
-            {/* Predict Button */}
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t dark:border-gray-700">
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <button
                 onClick={handlePredict}
                 disabled={predicting}
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {predicting ? 'Predicting...' : 'Predict Yield'}
               </button>
               {selectedProvince && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Using average climate data from <strong className="text-gray-700 dark:text-gray-200">{selectedProvince}</strong>
                 </p>
               )}
             </div>
           </div>
 
-          {/* Prediction Error */}
           {predError && <ErrorBox message={predError} />}
 
-          {/* Prediction Result */}
           {prediction && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Prediction Result</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">Prediction Result</h3>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4 border border-emerald-200 dark:border-emerald-700">
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Predicted Yield</p>
-                  <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide">Predicted Yield</p>
+                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
                     {prediction.predicted_yield.toFixed(2)}
                   </p>
-                  <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-1">metric tons / hectare</p>
+                  <p className="text-[10px] text-emerald-500 dark:text-emerald-400 mt-1">metric tons / hectare</p>
                 </div>
                 {prediction.confidence_interval && (
                   <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{prediction.confidence_interval.level} CI</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">{prediction.confidence_interval.level} CI</p>
                     <p className="text-lg font-bold text-blue-700 dark:text-blue-300 mt-1">
-                      {prediction.confidence_interval.lower.toFixed(2)} – {prediction.confidence_interval.upper.toFixed(2)}
+                      {prediction.confidence_interval.lower.toFixed(2)} &ndash; {prediction.confidence_interval.upper.toFixed(2)}
                     </p>
-                    <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">RMSE: {prediction.rmse?.toFixed(2)} t/ha</p>
+                    <p className="text-[10px] text-blue-500 dark:text-blue-400 mt-1">RMSE: {prediction.rmse?.toFixed(2)} t/ha</p>
                   </div>
                 )}
                 <StatCard
                   label="National Average"
                   value={`${prediction.context.national_avg} t/ha`}
-                  sub="Historical 2010-2024"
+                  sub="Historical 2010\u20132024"
                 />
                 <StatCard
                   label="vs. National Avg"
@@ -401,15 +395,14 @@ export default function Predict() {
                   sub={prediction.predicted_yield >= prediction.context.national_avg ? 'Above average' : 'Below average'}
                 />
                 <StatCard
-                  label="Model CV R²"
+                  label="Model CV R\u00b2"
                   value={prediction.cv_r2}
                   sub={`Model: ${prediction.model_name}`}
                 />
               </div>
 
-              {/* Yield comparison bar */}
               <div className="mt-4">
-                <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Yield Comparison</h4>
+                <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 uppercase tracking-wide">Yield Comparison</h4>
                 <ResponsiveContainer width="100%" height={120}>
                   <BarChart
                     data={[
@@ -420,11 +413,11 @@ export default function Predict() {
                     ]}
                     layout="vertical"
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(v) => `${v.toFixed(2)} t/ha`} />
-                    <Bar dataKey="value">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                       <Cell fill="#059669" />
                       <Cell fill="#6b7280" />
                       <Cell fill="#dc2626" />
@@ -437,59 +430,58 @@ export default function Predict() {
           )}
         </>
       ) : (
-        /* ====== BATCH PREDICTION MODE ====== */
         <>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
               Batch Prediction with SSP Scenarios
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Use projected climate data from SSP scenarios to predict yields for multiple provinces or years.
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              Use projected climate data from the five-GCM CMIP6 ensemble to predict yields for multiple provinces and years.
             </p>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">SSP Scenario</label>
+                <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">SSP Scenario</label>
                 <select
                   value={batchScenario}
                   onChange={(e) => setBatchScenario(e.target.value)}
-                  className="w-full border dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="ssp245">SSP2-4.5 (Moderate)</option>
                   <option value="ssp585">SSP5-8.5 (High Emissions)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">
                   Year (optional)
                 </label>
                 <select
                   value={batchYear}
                   onChange={(e) => setBatchYear(e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full border dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500"
                 >
-                  <option value="">All Years (2025-2034)</option>
+                  <option value="">All Years (2025&ndash;2034)</option>
                   {Array.from({ length: 10 }, (_, i) => 2025 + i).map((y) => (
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <label className="block text-[11px] font-medium text-gray-600 dark:text-gray-300 mb-1 uppercase tracking-wide">
                   Province (optional)
                 </label>
                 <SearchableSelect
                   options={provinces || []}
                   value={batchProvince}
                   onChange={setBatchProvince}
-                  placeholder="All Provinces"
+                  placeholder="All provinces"
                 />
               </div>
               <div className="flex items-end">
                 <button
                   onClick={handleBatchPredict}
                   disabled={batchPredicting}
-                  className="w-full px-4 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition font-medium text-sm disabled:opacity-50"
+                  className="w-full px-4 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition font-medium text-sm disabled:opacity-50"
                 >
                   {batchPredicting ? 'Predicting...' : 'Run Batch Prediction'}
                 </button>
@@ -516,48 +508,52 @@ export default function Predict() {
                 />
               </div>
 
-              {/* If filtered to a province: show year trend */}
               {batchProvince && batchByYear.length > 1 && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
                     Predicted Yield Trend: {batchProvince}
                   </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    Year-by-year projections under {batchResults.scenario === 'ssp245' ? 'SSP2-4.5' : 'SSP5-8.5'}
+                  </p>
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={batchByYear}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                       <YAxis
-                        domain={['auto', 'auto']}
-                        label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }}
+                        domain={['auto', 'auto']} tick={{ fontSize: 12 }}
+                        label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
                       />
-                      <Tooltip formatter={(v) => `${v.toFixed(2)} t/ha`} />
-                      <Legend />
+                      <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Line
                         type="monotone"
                         dataKey="predicted_yield"
                         stroke="#059669"
                         strokeWidth={2}
                         name="Predicted Yield"
-                        dot={{ r: 4 }}
+                        dot={{ r: 3 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               )}
 
-              {/* If filtered to a year: show province comparison */}
               {batchYear && batchByProvince.length > 1 && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
                     Province Predictions ({batchYear})
                   </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    Predicted yield across all provinces for the selected year
+                  </p>
                   <div className="overflow-x-auto">
                     <ResponsiveContainer
                       width={Math.max(800, batchByProvince.length * 25)}
                       height={400}
                     >
                       <BarChart data={batchByProvince}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis
                           dataKey="province"
                           angle={-45}
@@ -565,55 +561,57 @@ export default function Predict() {
                           height={120}
                           tick={{ fontSize: 10 }}
                         />
-                        <YAxis label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
-                        <Tooltip formatter={(v) => `${v.toFixed(2)} t/ha`} />
-                        <Bar dataKey="predicted_yield" name="Predicted Yield" fill="#059669" />
+                        <YAxis tick={{ fontSize: 11 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
+                        <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                        <Bar dataKey="predicted_yield" name="Predicted Yield" fill="#059669" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
               )}
 
-              {/* Results Table */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    Detailed Results ({batchResults.count} predictions)
+                  <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                    Detailed Results
                   </h3>
-                  <ExportButton
-                    rows={batchResults.predictions.map((p) => ({
-                      Province: p.province,
-                      Year: p.year,
-                      'Predicted Yield (t/ha)': p.predicted_yield.toFixed(2),
-                      ...(p.actual_yield != null ? { 'Actual Yield (t/ha)': p.actual_yield.toFixed(2) } : {}),
-                    }))}
-                    filename={`batch_predictions_${batchResults.scenario}.csv`}
-                  />
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{batchResults.count} predictions</span>
+                    <ExportButton
+                      rows={batchResults.predictions.map((p) => ({
+                        Province: p.province,
+                        Year: p.year,
+                        'Predicted Yield (t/ha)': p.predicted_yield.toFixed(2),
+                        ...(p.actual_yield != null ? { 'Actual Yield (t/ha)': p.actual_yield.toFixed(2) } : {}),
+                      }))}
+                      filename={`batch_predictions_${batchResults.scenario}.csv`}
+                    />
+                  </div>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="text-left p-2 text-gray-600 dark:text-gray-300">#</th>
-                        <th className="text-left p-2 text-gray-600 dark:text-gray-300">Province</th>
-                        <th className="text-right p-2 text-gray-600 dark:text-gray-300">Year</th>
-                        <th className="text-right p-2 text-gray-600 dark:text-gray-300">Predicted Yield (t/ha)</th>
+                        <th className="text-left p-2 text-gray-500 dark:text-gray-400">#</th>
+                        <th className="text-left p-2 text-gray-500 dark:text-gray-400">Province</th>
+                        <th className="text-right p-2 text-gray-500 dark:text-gray-400">Year</th>
+                        <th className="text-right p-2 text-gray-500 dark:text-gray-400">Predicted (t/ha)</th>
                         {'actual_yield' in (batchResults.predictions[0] || {}) && (
-                          <th className="text-right p-2 text-gray-600 dark:text-gray-300">Actual Yield (t/ha)</th>
+                          <th className="text-right p-2 text-gray-500 dark:text-gray-400">Actual (t/ha)</th>
                         )}
                       </tr>
                     </thead>
                     <tbody>
                       {batchResults.predictions.map((p, i) => (
-                        <tr key={i} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          <td className="p-2 text-gray-400 dark:text-gray-500">{i + 1}</td>
-                          <td className="p-2 font-medium text-gray-800 dark:text-gray-200">{p.province}</td>
-                          <td className="p-2 text-right font-mono text-gray-700 dark:text-gray-300">{p.year}</td>
-                          <td className="p-2 text-right font-mono text-emerald-700 dark:text-emerald-400">
+                        <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <td className="p-2 text-gray-400 dark:text-gray-500 text-xs">{i + 1}</td>
+                          <td className="p-2 font-medium text-gray-700 dark:text-gray-200">{p.province}</td>
+                          <td className="p-2 text-right font-mono text-xs text-gray-600 dark:text-gray-300">{p.year}</td>
+                          <td className="p-2 text-right font-mono text-xs text-emerald-700 dark:text-emerald-400">
                             {p.predicted_yield.toFixed(2)}
                           </td>
                           {p.actual_yield != null && (
-                            <td className="p-2 text-right font-mono text-blue-700 dark:text-blue-400">
+                            <td className="p-2 text-right font-mono text-xs text-blue-700 dark:text-blue-400">
                               {p.actual_yield.toFixed(2)}
                             </td>
                           )}

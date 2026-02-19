@@ -9,13 +9,13 @@ const scenarioInfo = {
   ssp245: {
     name: 'SSP2-4.5',
     subtitle: 'Middle of the Road',
-    desc: 'Moderate emissions scenario. CO\u2082 around current levels until mid-century, then declining.',
+    desc: 'Moderate emissions scenario. CO\u2082 concentrations stabilize near current levels by mid-century, then gradually decline. Represents intermediate challenges to mitigation and adaptation.',
     color: '#2563eb',
   },
   ssp585: {
     name: 'SSP5-8.5',
     subtitle: 'Fossil-fueled Development',
-    desc: 'High emissions scenario. CO\u2082 continues rising throughout 21st century.',
+    desc: 'High emissions scenario. CO\u2082 concentrations continue rising throughout the 21st century driven by fossil-fuel-intensive economic growth.',
     color: '#dc2626',
   },
 }
@@ -98,17 +98,20 @@ function CompareView() {
         <StatCard label="Provinces" value={allProvinces.length} sub="Compared across scenarios" />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
           National Yield: Historical + Both SSP Scenarios
         </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Five-GCM ensemble mean predictions under each scenario
+        </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis domain={['auto', 'auto']} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Legend />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical" dot={{ r: 3 }} />
             <Line type="monotone" dataKey="ssp245" stroke="#2563eb" strokeWidth={2} strokeDasharray="5 5" name="SSP2-4.5" dot={{ r: 3 }} />
             <Line type="monotone" dataKey="ssp585" stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" name="SSP5-8.5" dot={{ r: 3 }} />
@@ -136,23 +139,23 @@ function CompareView() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-left p-2 dark:text-gray-300">Province</th>
-                  <th className="text-right p-2 text-blue-700 dark:text-blue-400">SSP2-4.5</th>
-                  <th className="text-right p-2 text-red-700 dark:text-red-400">SSP5-8.5</th>
-                  <th className="text-right p-2 dark:text-gray-300">Gap</th>
+                  <th className="text-left p-2 text-gray-500 dark:text-gray-400">Province</th>
+                  <th className="text-right p-2 text-blue-600 dark:text-blue-400">SSP2-4.5</th>
+                  <th className="text-right p-2 text-red-600 dark:text-red-400">SSP5-8.5</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Gap</th>
                 </tr>
               </thead>
               <tbody>
                 {provinceCompare.map((p) => (
-                  <tr key={p.name} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="p-2 font-medium dark:text-gray-200">{p.name}</td>
-                    <td className={`p-2 text-right font-mono ${p.ssp245 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                  <tr key={p.name} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="p-2 font-medium text-gray-700 dark:text-gray-200">{p.name}</td>
+                    <td className={`p-2 text-right font-mono text-xs ${p.ssp245 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                       {p.ssp245 > 0 ? '+' : ''}{p.ssp245.toFixed(2)}%
                     </td>
-                    <td className={`p-2 text-right font-mono ${p.ssp585 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                    <td className={`p-2 text-right font-mono text-xs ${p.ssp585 >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                       {p.ssp585 > 0 ? '+' : ''}{p.ssp585.toFixed(2)}%
                     </td>
-                    <td className="p-2 text-right font-mono text-gray-600 dark:text-gray-400">
+                    <td className="p-2 text-right font-mono text-xs text-gray-500 dark:text-gray-400">
                       {(p.ssp585 - p.ssp245).toFixed(2)}pp
                     </td>
                   </tr>
@@ -175,34 +178,41 @@ export default function SSPScenarios() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">SSP Scenarios</h2>
-        <div className="flex gap-2">
-          {view === 'single' && Object.entries(scenarioInfo).map(([key, s]) => (
+      <div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">SSP Scenarios</h2>
+          <div className="flex gap-2">
+            {view === 'single' && Object.entries(scenarioInfo).map(([key, s]) => (
+              <button
+                key={key}
+                onClick={() => setScenario(key)}
+                className={`px-4 py-1.5 rounded-md font-medium text-sm transition ${
+                  scenario === key
+                    ? 'text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+                style={scenario === key ? { backgroundColor: s.color } : {}}
+              >
+                {s.name}
+              </button>
+            ))}
             <button
-              key={key}
-              onClick={() => setScenario(key)}
-              className={`px-4 py-2 rounded font-medium text-sm ${
-                scenario === key
-                  ? 'text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              onClick={() => setView(view === 'single' ? 'compare' : 'single')}
+              className={`px-4 py-1.5 rounded-md font-medium text-sm transition ${
+                view === 'compare'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
-              style={scenario === key ? { backgroundColor: s.color } : {}}
             >
-              {s.name}
+              {view === 'compare' ? 'Single View' : 'Compare Both'}
             </button>
-          ))}
-          <button
-            onClick={() => setView(view === 'single' ? 'compare' : 'single')}
-            className={`px-4 py-2 rounded font-medium text-sm ${
-              view === 'compare'
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-          >
-            {view === 'compare' ? 'Single View' : 'Compare Both'}
-          </button>
+          </div>
         </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
+          Future banana yield projections (2025&ndash;2034) derived from a five-model CMIP6
+          ensemble with delta bias correction. Climate features extracted via Google Earth
+          Engine from NASA NEX-GDDP-CMIP6.
+        </p>
       </div>
 
       {view === 'compare' ? (
@@ -232,15 +242,15 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
     return (
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
         <h3 className="font-semibold text-lg mb-2">{info.name} Data Not Available</h3>
-        <p className="mb-4">{info.desc}</p>
-        <p className="text-sm">Run the SSP pipeline to generate predictions:</p>
-        <ol className="list-decimal ml-5 mt-2 text-sm space-y-1">
-          <li><code>python gee_to_gdrive.py</code> — Export climate data</li>
-          <li><code>python tif_to_excel.py</code> — Extract province-level features</li>
-          <li><code>python merge_excels.py</code> — Merge historical + SSP data</li>
-          <li><code>python future_predictions.py</code> — Predict 2025-2034</li>
-          <li><code>python projections.py</code> — Generate visualizations</li>
-          <li><code>python shap_analysis.py</code> — SHAP analysis</li>
+        <p className="mb-4 text-sm">{info.desc}</p>
+        <p className="text-xs font-medium mb-2">Run the SSP pipeline to generate predictions:</p>
+        <ol className="list-decimal ml-5 mt-2 text-xs space-y-1">
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python gee_to_gdrive.py</code> &mdash; Export climate data</li>
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python tif_to_excel.py</code> &mdash; Extract province-level features</li>
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python merge_excels.py</code> &mdash; Merge historical + SSP data</li>
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python future_predictions.py</code> &mdash; Predict 2025&ndash;2034</li>
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python projections.py</code> &mdash; Generate visualizations</li>
+          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python shap_analysis.py</code> &mdash; SHAP analysis</li>
         </ol>
       </div>
     )
@@ -270,23 +280,22 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
   const increasing = provinceSummary.filter((p) => (p['% Change'] || 0) > 0).length
   const decreasing = provinceSummary.filter((p) => (p['% Change'] || 0) < 0).length
 
-  // Show top 10 + bottom 10 by default
   const displayedProvinces = showAllProvinces || provinceSummary.length <= 20
     ? provinceSummary
     : [...provinceSummary.slice(0, 10), ...provinceSummary.slice(-10)]
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border-l-4" style={{ borderLeftColor: info.color }}>
-        <h3 className="font-semibold text-lg" style={{ color: info.color }}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border-l-4 border border-gray-200 dark:border-gray-700 p-4" style={{ borderLeftColor: info.color }}>
+        <h3 className="font-semibold text-base" style={{ color: info.color }}>
           {info.name}: {info.subtitle}
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{info.desc}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{info.desc}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Provinces Increasing" value={increasing} sub="yield projected to rise" />
-        <StatCard label="Provinces Decreasing" value={decreasing} sub="yield projected to drop" />
+        <StatCard label="Provinces Increasing" value={increasing} sub="Yield projected to rise" />
+        <StatCard label="Provinces Decreasing" value={decreasing} sub="Yield projected to drop" />
         <StatCard
           label="Future Avg Yield"
           value={
@@ -295,35 +304,36 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
               : 'N/A'
           }
         />
-        <StatCard label="Projection Period" value="2025-2034" sub="5-GCM Ensemble / CMIP6" />
+        <StatCard label="Projection Period" value="2025\u20132034" sub="5-GCM ensemble / CMIP6" />
       </div>
 
-      {/* National Trend */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
           National Yield Trend: Historical vs {info.name}
         </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Observed yield (2010&ndash;2024) and projected yield (2025&ndash;2034) under {info.name}
+        </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis domain={['auto', 'auto']} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft' }} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical (2010-2024)" dot={{ r: 3 }} />
-            <Line type="monotone" dataKey="future" stroke={info.color} strokeWidth={2} strokeDasharray="5 5" name={`${info.name} (2025-2034)`} dot={{ r: 3 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+            <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical (2010\u20132024)" dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="future" stroke={info.color} strokeWidth={2} strokeDasharray="5 5" name={`${info.name} (2025\u20132034)`} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Province % Change Bar Chart — top/bottom 10 */}
       {provinceSummary.length > 0 && (
         <CollapsibleSection title={`Province Yield % Change (Historical vs ${info.name})`}>
           <div className="flex items-center gap-3 mb-3">
             {provinceSummary.length > 20 && (
               <button
                 onClick={() => setShowAllProvinces(!showAllProvinces)}
-                className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+                className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
               >
                 {showAllProvinces ? 'Show Top & Bottom 10' : `Show All ${provinceSummary.length} Provinces`}
               </button>
@@ -331,11 +341,11 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
           </div>
           <ResponsiveContainer width="100%" height={showAllProvinces ? 600 : 400}>
             <BarChart data={displayedProvinces}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11 }} />
-              <YAxis label={{ value: '% Change', angle: -90, position: 'insideLeft' }} />
-              <Tooltip />
-              <Bar dataKey="% Change" name="% Change">
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 11 }} label={{ value: '% Change', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Bar dataKey="% Change" name="% Change" radius={[4, 4, 0, 0]}>
                 {displayedProvinces.map((entry, i) => (
                   <Cell key={i} fill={(entry['% Change'] || 0) >= 0 ? '#059669' : '#dc2626'} />
                 ))}
@@ -345,19 +355,18 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
         </CollapsibleSection>
       )}
 
-      {/* SSP Plots */}
       {data.plots && data.plots.length > 0 && (
         <CollapsibleSection title="Generated Plots" defaultOpen={false} badge={`${data.plots.length} plots`}>
           <div className="grid md:grid-cols-2 gap-4">
             {data.plots.map((plot) => (
               <div key={plot}>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
                   {plot.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
                   src={`${API_BASE}/ssp/${scenario}/plot/${plot}`}
                   alt={plot}
-                  className="w-full rounded border dark:border-gray-600"
+                  className="w-full rounded border border-gray-200 dark:border-gray-600"
                 />
               </div>
             ))}
@@ -365,19 +374,21 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
         </CollapsibleSection>
       )}
 
-      {/* SHAP Images */}
       {data.shap_images && data.shap_images.length > 0 && (
         <CollapsibleSection title="SHAP Feature Importance" defaultOpen={false} badge={`${data.shap_images.length} plots`}>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            SHapley Additive exPlanations (SHAP) values indicating the contribution of each climate feature to the model predictions.
+          </p>
           <div className="grid md:grid-cols-2 gap-4">
             {data.shap_images.map((img) => (
               <div key={img}>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
                   {img.replace('.png', '').replace(/_/g, ' ')}
                 </p>
                 <img
                   src={`${API_BASE}/ssp/${scenario}/plot/${img}`}
                   alt={img}
-                  className="w-full rounded border dark:border-gray-600"
+                  className="w-full rounded border border-gray-200 dark:border-gray-600"
                 />
               </div>
             ))}
@@ -385,7 +396,6 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
         </CollapsibleSection>
       )}
 
-      {/* Province Detail Table */}
       {provinceSummary.length > 0 && (
         <CollapsibleSection
           title="Province-Level Summary"
@@ -407,23 +417,23 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-left p-2 dark:text-gray-300">Province</th>
-                  <th className="text-right p-2 dark:text-gray-300">Historical Avg</th>
-                  <th className="text-right p-2 dark:text-gray-300">Future Avg</th>
-                  <th className="text-right p-2 dark:text-gray-300">% Change</th>
+                  <th className="text-left p-2 text-gray-500 dark:text-gray-400">Province</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Historical Avg</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">Future Avg</th>
+                  <th className="text-right p-2 text-gray-500 dark:text-gray-400">% Change</th>
                 </tr>
               </thead>
               <tbody>
                 {provinceSummary.map((p) => (
-                  <tr key={p.name} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="p-2 font-medium dark:text-gray-200">{p.name}</td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">
+                  <tr key={p.name} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="p-2 font-medium text-gray-700 dark:text-gray-200">{p.name}</td>
+                    <td className="p-2 text-right font-mono text-xs text-gray-600 dark:text-gray-300">
                       {p['Historical Avg (2010\u20132024)']?.toFixed(2) || 'N/A'}
                     </td>
-                    <td className="p-2 text-right font-mono dark:text-gray-300">
+                    <td className="p-2 text-right font-mono text-xs text-gray-600 dark:text-gray-300">
                       {p['Future Avg (2025\u20132034)']?.toFixed(2) || 'N/A'}
                     </td>
-                    <td className={`p-2 text-right font-mono font-semibold ${
+                    <td className={`p-2 text-right font-mono text-xs font-semibold ${
                       (p['% Change'] || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
                     }`}>
                       {p['% Change'] != null ? `${p['% Change'] > 0 ? '+' : ''}${p['% Change'].toFixed(2)}%` : 'N/A'}
