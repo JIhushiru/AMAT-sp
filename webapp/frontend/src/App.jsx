@@ -89,7 +89,7 @@ export default function App() {
             Institute of Mathematical Sciences &middot; College of Arts and Sciences &middot; University of the Philippines Los Ba&ntilde;os
           </p>
           <p className="text-[11px] text-gray-400 dark:text-gray-500">
-            Arsolon, J.H.R. (2025) &middot; Adviser: Dr. Destiny SM. Lutero
+            Arsolon, J.H.R. (2025) &middot; Adviser: Dr. Destiny SM. Lutero &middot; Co-adviser: Mark Lexter De Lara
           </p>
         </div>
       </footer>
