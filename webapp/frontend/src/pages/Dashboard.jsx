@@ -16,7 +16,6 @@ export default function Dashboard() {
     year: +year, yield: val,
   }))
 
-  // Merge SSP trends if available
   if (data.ssp245_national_trend) {
     Object.entries(data.ssp245_national_trend).forEach(([year, val]) => {
       const existing = trendData.find((d) => d.year === +year)
@@ -45,7 +44,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="National Avg Yield" value={`${h.national_avg} t/ha`} />
@@ -66,8 +65,8 @@ export default function Dashboard() {
       </div>
 
       {/* National Yield Trend */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold mb-3 text-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
           National Yield Trend (2010-2024
           {data.ssp245_available ? ' + SSP Projections 2025-2034' : ''})
         </h3>
@@ -102,8 +101,8 @@ export default function Dashboard() {
 
       {/* Top & Bottom Provinces */}
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
             Top 5 Provinces by Yield
           </h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -121,8 +120,8 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-200">
             Bottom 5 Provinces by Yield
           </h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -141,23 +140,23 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Links */}
+      {/* Quick Links — unified subtle design */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        <Link to="/map" className="bg-emerald-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-emerald-700 transition font-medium text-sm md:text-base">
-          Interactive Map
-        </Link>
-        <Link to="/historical" className="bg-blue-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-blue-700 transition font-medium text-sm md:text-base">
-          Explore Data
-        </Link>
-        <Link to="/models" className="bg-purple-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-purple-700 transition font-medium text-sm md:text-base">
-          Model Results
-        </Link>
-        <Link to="/ssp" className="bg-orange-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-orange-700 transition font-medium text-sm md:text-base">
-          SSP Scenarios
-        </Link>
-        <Link to="/predict" className="bg-teal-600 text-white rounded-lg p-3 md:p-4 text-center hover:bg-teal-700 transition font-medium text-sm md:text-base col-span-2 sm:col-span-1">
-          Predict Yield
-        </Link>
+        {[
+          { to: '/map', label: 'Interactive Map' },
+          { to: '/historical', label: 'Explore Data' },
+          { to: '/models', label: 'Model Results' },
+          { to: '/ssp', label: 'SSP Scenarios' },
+          { to: '/predict', label: 'Predict Yield' },
+        ].map(({ to, label }) => (
+          <Link
+            key={to}
+            to={to}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 text-center hover:border-emerald-500 hover:shadow-md dark:hover:border-emerald-500 transition text-sm md:text-base text-gray-700 dark:text-gray-200 font-medium"
+          >
+            {label}
+          </Link>
+        ))}
       </div>
     </div>
   )
