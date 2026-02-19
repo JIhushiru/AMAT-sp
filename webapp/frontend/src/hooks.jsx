@@ -91,6 +91,39 @@ export function Loader({ retrying, elapsed }) {
   )
 }
 
+export function downloadCSV(rows, filename = 'export.csv') {
+  if (!rows || rows.length === 0) return
+  const headers = Object.keys(rows[0])
+  const csv = [
+    headers.join(','),
+    ...rows.map((r) =>
+      headers.map((h) => {
+        const val = r[h] ?? ''
+        return typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+      }).join(',')
+    ),
+  ].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export function ExportButton({ rows, filename, label = 'Export CSV' }) {
+  if (!rows || rows.length === 0) return null
+  return (
+    <button
+      onClick={() => downloadCSV(rows, filename)}
+      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded border border-gray-300 transition"
+    >
+      {label}
+    </button>
+  )
+}
+
 export function ErrorBox({ message }) {
   const isServerDown = message.includes('Failed to fetch') || message.includes('503') || message.includes('502')
   return (

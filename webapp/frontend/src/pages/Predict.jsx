@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, ExportButton } from '../hooks'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
@@ -564,9 +564,20 @@ export default function Predict() {
 
               {/* Results Table */}
               <div className="bg-white rounded-lg shadow p-4">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                  Detailed Results ({batchResults.count} predictions)
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    Detailed Results ({batchResults.count} predictions)
+                  </h3>
+                  <ExportButton
+                    rows={batchResults.predictions.map((p) => ({
+                      Province: p.province,
+                      Year: p.year,
+                      'Predicted Yield (t/ha)': p.predicted_yield.toFixed(2),
+                      ...(p.actual_yield != null ? { 'Actual Yield (t/ha)': p.actual_yield.toFixed(2) } : {}),
+                    }))}
+                    filename={`batch_predictions_${batchResults.scenario}.csv`}
+                  />
+                </div>
                 <div className="max-h-96 overflow-y-auto">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-gray-50">

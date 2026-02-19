@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useFetch, Loader, ErrorBox } from '../hooks'
+import { useFetch, Loader, ErrorBox, ExportButton } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis,
@@ -152,13 +152,19 @@ export default function HistoricalData() {
           <h3 className="text-lg font-semibold text-gray-700">
             Province Avg Yield ({summary?.total_provinces} provinces)
           </h3>
-          <input
-            type="text"
-            placeholder="Search province..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm w-60"
-          />
+          <div className="flex items-center gap-2">
+            <ExportButton
+              rows={provinces.map(([name, val]) => ({ Province: name, 'Avg Yield (t/ha)': val.toFixed(2) }))}
+              filename="province_avg_yield.csv"
+            />
+            <input
+              type="text"
+              placeholder="Search province..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border rounded px-3 py-1.5 text-sm w-60"
+            />
+          </div>
         </div>
         <div className="max-h-96 overflow-y-auto">
           <table className="w-full text-sm">

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, API_BASE } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar, Cell,
@@ -241,9 +241,20 @@ export default function SSPScenarios() {
       {/* Province Detail Table */}
       {provinceSummary.length > 0 && (
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            Province-Level Summary
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-700">
+              Province-Level Summary
+            </h3>
+            <ExportButton
+              rows={provinceSummary.map((p) => ({
+                Province: p.name,
+                'Historical Avg': p['Historical Avg (2010\u20132024)']?.toFixed(2) ?? '',
+                'Future Avg': p['Future Avg (2025\u20132034)']?.toFixed(2) ?? '',
+                '% Change': p['% Change']?.toFixed(2) ?? '',
+              }))}
+              filename={`${info.name}_province_summary.csv`}
+            />
+          </div>
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50">
