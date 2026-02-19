@@ -7,11 +7,13 @@ import ModelResults from './pages/ModelResults'
 import SSPScenarios from './pages/SSPScenarios'
 import ProvinceDetail from './pages/ProvinceDetail'
 import Predict from './pages/Predict'
+import ProvincialAnalysis from './pages/ProvincialAnalysis'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard' },
   { to: '/map', label: 'Map' },
   { to: '/historical', label: 'Historical' },
+  { to: '/provincial', label: 'Provincial' },
   { to: '/models', label: 'Models' },
   { to: '/ssp', label: 'SSP Scenarios' },
   { to: '/predict', label: 'Predict' },
@@ -73,6 +75,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/map" element={<MapView />} />
           <Route path="/historical" element={<HistoricalData />} />
+          <Route path="/provincial" element={<ProvincialAnalysis />} />
           <Route path="/models" element={<ModelResults />} />
           <Route path="/ssp" element={<SSPScenarios />} />
           <Route path="/predict" element={<Predict />} />
