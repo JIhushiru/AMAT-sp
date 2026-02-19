@@ -103,20 +103,20 @@ export default function MapView() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-2xl font-bold text-gray-800">Yield Map</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Yield Map</h2>
         <div className="flex items-center gap-3 flex-wrap">
           {/* Data layer selector */}
-          <div className="flex rounded overflow-hidden border text-sm">
+          <div className="flex rounded overflow-hidden border dark:border-gray-600 text-sm">
             <button
               onClick={() => setDataLayer('historical')}
-              className={`px-3 py-1.5 ${dataLayer === 'historical' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+              className={`px-3 py-1.5 ${dataLayer === 'historical' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
             >
               Historical
             </button>
             {ssp245Available && (
               <button
                 onClick={() => setDataLayer('ssp245')}
-                className={`px-3 py-1.5 border-l ${dataLayer === 'ssp245' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                className={`px-3 py-1.5 border-l dark:border-gray-600 ${dataLayer === 'ssp245' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
               >
                 SSP2-4.5
               </button>
@@ -124,7 +124,7 @@ export default function MapView() {
             {ssp585Available && (
               <button
                 onClick={() => setDataLayer('ssp585')}
-                className={`px-3 py-1.5 border-l ${dataLayer === 'ssp585' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                className={`px-3 py-1.5 border-l dark:border-gray-600 ${dataLayer === 'ssp585' ? 'bg-red-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
               >
                 SSP5-8.5
               </button>
@@ -135,7 +135,7 @@ export default function MapView() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="border rounded px-3 py-1.5 text-sm"
+              className="border dark:border-gray-600 rounded px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               {years.map((y) => (
                 <option key={y} value={y}>
@@ -156,8 +156,8 @@ export default function MapView() {
       {showStatic ? (
         <div className="grid md:grid-cols-2 gap-4">
           {mapImages?.map((img) => (
-            <div key={img.name} className="bg-white rounded-lg shadow p-3">
-              <h3 className="font-semibold text-gray-700 mb-2">{img.label}</h3>
+            <div key={img.name} className="bg-white dark:bg-gray-800 rounded-lg shadow p-3">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">{img.label}</h3>
               <img
                 src={`${API_BASE}/map/image/${img.name}`}
                 alt={img.label}
@@ -167,7 +167,7 @@ export default function MapView() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden relative h-100 md:h-150">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden relative h-100 md:h-150">
           {geojson && (
             <MapContainer
               center={[12.5, 122]}
@@ -189,17 +189,17 @@ export default function MapView() {
           )}
 
           {/* Legend */}
-          <div className="absolute bottom-6 left-6 bg-white rounded-lg shadow-lg p-3 z-[1000]">
-            <p className="text-xs font-semibold mb-1.5">
+          <div className="absolute bottom-6 left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-1000">
+            <p className="text-xs font-semibold mb-1.5 text-gray-800 dark:text-gray-200">
               Yield (t/ha)
               {dataLayer !== 'historical' && (
-                <span className="ml-1 font-normal text-gray-400">
+                <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">
                   — {dataLayer === 'ssp245' ? 'SSP2-4.5' : 'SSP5-8.5'}
                 </span>
               )}
             </p>
             {YIELD_BINS.map((bin) => (
-              <div key={bin.label} className="flex items-center gap-2 text-xs">
+              <div key={bin.label} className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
                 <span
                   className="w-4 h-3 inline-block rounded-sm"
                   style={{ backgroundColor: bin.color }}
@@ -207,8 +207,8 @@ export default function MapView() {
                 {bin.label}
               </div>
             ))}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-4 h-3 inline-block rounded-sm bg-gray-300" />
+            <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+              <span className="w-4 h-3 inline-block rounded-sm bg-gray-300 dark:bg-gray-600" />
               No data
             </div>
           </div>
@@ -216,9 +216,9 @@ export default function MapView() {
       )}
 
       {hoveredProvince && (
-        <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 z-50 border">
-          <p className="font-semibold">{hoveredProvince.name}</p>
-          <p className="text-emerald-700 font-bold">
+        <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-50 border dark:border-gray-700">
+          <p className="font-semibold text-gray-800 dark:text-gray-100">{hoveredProvince.name}</p>
+          <p className="text-emerald-700 dark:text-emerald-400 font-bold">
             {hoveredProvince.yield
               ? `${hoveredProvince.yield.toFixed(2)} t/ha`
               : 'No data'}

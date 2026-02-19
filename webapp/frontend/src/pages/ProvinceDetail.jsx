@@ -46,10 +46,10 @@ export default function ProvinceDetail() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link to="/historical" className="text-emerald-600 hover:underline text-sm">
+        <Link to="/historical" className="text-emerald-600 dark:text-emerald-400 hover:underline text-sm">
           &larr; Back
         </Link>
-        <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{name}</h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -66,8 +66,8 @@ export default function ProvinceDetail() {
       </div>
 
       {/* Yield Trend */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Yield Trend</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Yield Trend</h3>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trendData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -81,8 +81,8 @@ export default function ProvinceDetail() {
 
       {/* Climate Profile Radar */}
       {radarData.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
             Climate Profile (Normalized)
           </h3>
           <ResponsiveContainer width="100%" height={400}>
@@ -102,10 +102,10 @@ export default function ProvinceDetail() {
                   if (!payload?.[0]) return null
                   const d = payload[0].payload
                   return (
-                    <div className="bg-white border rounded p-2 text-xs shadow">
-                      <p className="font-semibold">{d.feature}</p>
-                      <p>Raw value: {d.raw}</p>
-                      <p>Normalized: {d.value.toFixed(0)}%</p>
+                    <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded p-2 text-xs shadow">
+                      <p className="font-semibold text-gray-800 dark:text-gray-100">{d.feature}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Raw value: {d.raw}</p>
+                      <p className="text-gray-600 dark:text-gray-400">Normalized: {d.value.toFixed(0)}%</p>
                     </div>
                   )
                 }}
@@ -116,16 +116,16 @@ export default function ProvinceDetail() {
       )}
 
       {/* Raw Data Table */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Raw Data</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Raw Data</h3>
         <div className="overflow-x-auto">
           <table className="text-xs w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="p-1.5 text-left">Year</th>
-                <th className="p-1.5 text-right">Yield</th>
+                <th className="p-1.5 text-left text-gray-600 dark:text-gray-300">Year</th>
+                <th className="p-1.5 text-right text-gray-600 dark:text-gray-300">Yield</th>
                 {features.map((f) => (
-                  <th key={f} className="p-1.5 text-right">{f}</th>
+                  <th key={f} className="p-1.5 text-right text-gray-600 dark:text-gray-300">{f}</th>
                 ))}
               </tr>
             </thead>
@@ -133,13 +133,13 @@ export default function ProvinceDetail() {
               {data.data
                 .sort((a, b) => a.year - b.year)
                 .map((row) => (
-                  <tr key={row.year} className="border-t">
-                    <td className="p-1.5 font-medium">{row.year}</td>
-                    <td className="p-1.5 text-right font-mono text-emerald-700">
+                  <tr key={row.year} className="border-t dark:border-gray-700">
+                    <td className="p-1.5 font-medium text-gray-800 dark:text-gray-200">{row.year}</td>
+                    <td className="p-1.5 text-right font-mono text-emerald-700 dark:text-emerald-400">
                       {row.yield?.toFixed(2)}
                     </td>
                     {features.map((f) => (
-                      <td key={f} className="p-1.5 text-right font-mono">
+                      <td key={f} className="p-1.5 text-right font-mono text-gray-700 dark:text-gray-300">
                         {row[f]?.toFixed(2) ?? '-'}
                       </td>
                     ))}
