@@ -264,23 +264,31 @@ def list_map_images():
         if path.exists():
             images.append({"name": name, "label": label, "category": "historical"})
 
-    # SSP2-4.5 maps
+    # SSP2-4.5 maps (yield + percent change)
     for name, label in [
-        ("banana_yield_map_ssp245.png", "Philippines (Full)"),
-        ("banana_yield_map_luzon_ssp245.png", "Luzon"),
-        ("banana_yield_map_visayas_ssp245.png", "Visayas"),
-        ("banana_yield_map_mindanao_ssp245.png", "Mindanao"),
+        ("banana_yield_map_ssp245.png", "Projected Yield — Philippines"),
+        ("banana_yield_map_luzon_ssp245.png", "Projected Yield — Luzon"),
+        ("banana_yield_map_visayas_ssp245.png", "Projected Yield — Visayas"),
+        ("banana_yield_map_mindanao_ssp245.png", "Projected Yield — Mindanao"),
+        ("banana_yield_pct_change_ssp245.png", "% Change — Philippines"),
+        ("banana_yield_pct_change_luzon_ssp245.png", "% Change — Luzon"),
+        ("banana_yield_pct_change_visayas_ssp245.png", "% Change — Visayas"),
+        ("banana_yield_pct_change_mindanao_ssp245.png", "% Change — Mindanao"),
     ]:
         path = SSP245_DIR / name
         if path.exists():
             images.append({"name": f"ssp245/{name}", "label": label, "category": "ssp245"})
 
-    # SSP5-8.5 maps
+    # SSP5-8.5 maps (yield + percent change)
     for name, label in [
-        ("banana_yield_map_ssp585.png", "Philippines (Full)"),
-        ("banana_yield_map_luzon_ssp585.png", "Luzon"),
-        ("banana_yield_map_visayas_ssp585.png", "Visayas"),
-        ("banana_yield_map_mindanao_ssp585.png", "Mindanao"),
+        ("banana_yield_map_ssp585.png", "Projected Yield — Philippines"),
+        ("banana_yield_map_luzon_ssp585.png", "Projected Yield — Luzon"),
+        ("banana_yield_map_visayas_ssp585.png", "Projected Yield — Visayas"),
+        ("banana_yield_map_mindanao_ssp585.png", "Projected Yield — Mindanao"),
+        ("banana_yield_pct_change_ssp585.png", "% Change — Philippines"),
+        ("banana_yield_pct_change_luzon_ssp585.png", "% Change — Luzon"),
+        ("banana_yield_pct_change_visayas_ssp585.png", "% Change — Visayas"),
+        ("banana_yield_pct_change_mindanao_ssp585.png", "% Change — Mindanao"),
     ]:
         path = SSP585_DIR / name
         if path.exists():
@@ -532,64 +540,71 @@ def get_prediction_features():
 @app.post("/api/predict")
 def predict_yield(req: PredictRequest):
     """Predict banana yield from climate features using a trained model."""
-    models = _get_models()
-    if not models:
-        raise HTTPException(503, "No trained models available. Training may still be in progress.")
-
-    # Select model
-    if req.model_key and req.model_key in models:
-        artifact = models[req.model_key]
-    else:
-        artifact = min(models.values(), key=lambda a: a.get("rank", 99))
-
-    model = artifact["model"]
-    scaler = artifact["scaler"]
-    expected_features = artifact["selected_features"]
-
-    # Validate input features
-    missing = [f for f in expected_features if f not in req.features]
-    if missing:
-        raise HTTPException(400, f"Missing features: {missing}")
-
-    # Build input array in the correct feature order
-    X = pd.DataFrame([{f: req.features[f] for f in expected_features}])
-    X_scaled = pd.DataFrame(scaler.transform(X), columns=expected_features)
-
-    prediction = float(model.predict(X_scaled)[0])
-
-    # Get historical context
-    df = safe_read_excel(TRAINING_DATA)
-    national_avg = round(float(df["yield"].mean()), 2)
-    national_min = round(float(df["yield"].min()), 2)
-    national_max = round(float(df["yield"].max()), 2)
-
-    # Compute RMSE on training data for confidence interval
     try:
-        train_X = df[expected_features].copy()
-        train_X_scaled = pd.DataFrame(scaler.transform(train_X), columns=expected_features)
-        train_preds = model.predict(train_X_scaled)
-        residuals = df["yield"].values - train_preds
-        rmse = float(np.sqrt(np.mean(residuals ** 2)))
-    except Exception:
-        rmse = 0.0
+        models = _get_models()
+        if not models:
+            raise HTTPException(503, "No trained models available. Training may still be in progress.")
 
-    return _sanitize({
-        "predicted_yield": round(prediction, 4),
-        "model_used": artifact.get("rank", 0),
-        "model_name": req.model_key or f"rank{artifact.get('rank', '?')}",
-        "cv_r2": round(artifact.get("cv_avg_r2", 0), 4),
-        "rmse": round(rmse, 4),
-        "confidence_interval": {
-            "lower": round(max(0, prediction - 1.96 * rmse), 4),
-            "upper": round(prediction + 1.96 * rmse, 4),
-            "level": "95%",
-        },
-        "context": {
-            "national_avg": national_avg,
-            "national_min": national_min,
-            "national_max": national_max,
-        },
-    })
+        # Select model
+        if req.model_key and req.model_key in models:
+            artifact = models[req.model_key]
+        else:
+            artifact = min(models.values(), key=lambda a: a.get("rank", 99))
+
+        model = artifact["model"]
+        scaler = artifact["scaler"]
+        expected_features = artifact["selected_features"]
+
+        # Validate input features
+        missing = [f for f in expected_features if f not in req.features]
+        if missing:
+            raise HTTPException(400, f"Missing features: {missing}")
+
+        # Build input array in the correct feature order
+        X = pd.DataFrame([{f: req.features[f] for f in expected_features}])
+        X_scaled = pd.DataFrame(scaler.transform(X), columns=expected_features)
+
+        prediction = float(model.predict(X_scaled)[0])
+
+        # Get historical context
+        df = safe_read_excel(TRAINING_DATA)
+        national_avg = round(float(df["yield"].mean()), 2)
+        national_min = round(float(df["yield"].min()), 2)
+        national_max = round(float(df["yield"].max()), 2)
+
+        # Compute RMSE on training data for confidence interval
+        try:
+            train_X = df[expected_features].copy()
+            train_X_scaled = pd.DataFrame(scaler.transform(train_X), columns=expected_features)
+            train_preds = model.predict(train_X_scaled)
+            residuals = df["yield"].values - train_preds
+            rmse = float(np.sqrt(np.mean(residuals ** 2)))
+            if np.isnan(rmse) or np.isinf(rmse):
+                rmse = 0.0
+        except Exception:
+            rmse = 0.0
+
+        return _sanitize({
+            "predicted_yield": round(prediction, 4),
+            "model_used": artifact.get("rank", 0),
+            "model_name": req.model_key or f"rank{artifact.get('rank', '?')}",
+            "cv_r2": round(artifact.get("cv_avg_r2", 0), 4),
+            "rmse": round(rmse, 4),
+            "confidence_interval": {
+                "lower": round(max(0, prediction - 1.96 * rmse), 4),
+                "upper": round(prediction + 1.96 * rmse, 4),
+                "level": "95%",
+            },
+            "context": {
+                "national_avg": national_avg,
+                "national_min": national_min,
+                "national_max": national_max,
+            },
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Prediction failed: {str(e)}")
 
 
 @app.post("/api/predict/batch")
