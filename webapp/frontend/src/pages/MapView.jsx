@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
@@ -31,6 +31,17 @@ export default function MapView() {
   const [hoveredProvince, setHoveredProvince] = useState(null)
   const [showStatic, setShowStatic] = useState(false)
   const navigate = useNavigate()
+
+  // Filter out Point features (admin centres) — keep only Polygon/MultiPolygon provinces
+  const filteredGeojson = useMemo(() => {
+    if (!geojson) return null
+    return {
+      ...geojson,
+      features: geojson.features.filter(
+        (f) => f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon'
+      ),
+    }
+  }, [geojson])
 
   if (gLoad || yLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (gErr) return <ErrorBox message={gErr} />
@@ -172,7 +183,7 @@ export default function MapView() {
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative h-100 md:h-150">
-          {geojson && (
+          {filteredGeojson && (
             <MapContainer
               center={[12.5, 122]}
               zoom={6}
@@ -185,7 +196,7 @@ export default function MapView() {
               />
               <GeoJSON
                 key={mapKey}
-                data={geojson}
+                data={filteredGeojson}
                 style={style}
                 onEachFeature={onEachFeature}
               />
