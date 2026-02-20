@@ -215,7 +215,7 @@ def create_combined_map(merged_data, output_dir):
     sm2 = plt.cm.ScalarMappable(cmap=cmap2, norm=norm2)
     sm2.set_array([])
     pos2 = ax2.get_position()
-    cax2 = fig.add_axes([pos2.x1 - 0.03, pos2.y0 + pos2.height * 0.6, 0.012, pos2.height * 0.3])
+    cax2 = fig.add_axes([pos2.x1 - 0.07, pos2.y0 + pos2.height * 0.6, 0.012, pos2.height * 0.3])
     cbar2 = plt.colorbar(sm2, cax=cax2, ticks=CV_BINS, orientation='vertical')
     cbar2.set_ticklabels(['0', '10', '20', '30', '50', '100'])
     cbar2.outline.set_edgecolor('black')
