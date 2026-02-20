@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, CollapsibleSection } from '../hooks'
+import { useFetch, Loader, ErrorBox, CollapsibleSection, API_BASE } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, ReferenceLine,
@@ -239,6 +239,25 @@ export default function ProvincialAnalysis() {
         showSsp245={showSsp245}
         showSsp585={showSsp585}
       />
+
+      <CollapsibleSection title="Static Plots" defaultOpen={false} badge="3 figures">
+        <div className="space-y-6">
+          {[
+            { file: 'top5_province_trends.png', label: 'Top 5 Provinces — Yield Trends' },
+            { file: 'bottom5_province_trends.png', label: 'Bottom 5 Provinces — Yield Trends' },
+            { file: 'provincial_analysis_combined.png', label: 'Provincial Analysis — Combined Overview' },
+          ].map(({ file, label }) => (
+            <div key={file}>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{label}</p>
+              <img
+                src={`${API_BASE}/training/plot/${file}`}
+                alt={label}
+                className="w-full rounded border border-gray-200 dark:border-gray-700"
+              />
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
 
       <CollapsibleSection title="Average Yield Summary" defaultOpen={false} badge="10 provinces">
         <div className="overflow-x-auto">
