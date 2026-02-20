@@ -184,12 +184,13 @@ def create_combined_map(merged_data, output_dir):
 
     _style_axis(ax1, bounds, "(a) Mean Yield (tons/ha)")
 
-    # Mean Yield colorbar
+    # Mean Yield colorbar (inside panel a, upper-right)
     norm1 = BoundaryNorm(COLOR_BINS, len(COLORS) - 1)
     cmap1 = ListedColormap(COLORS[1:])
     sm1 = plt.cm.ScalarMappable(cmap=cmap1, norm=norm1)
     sm1.set_array([])
-    cax1 = fig.add_axes([0.44, 0.6, 0.012, 0.2])
+    pos1 = ax1.get_position()
+    cax1 = fig.add_axes([pos1.x1 - 0.03, pos1.y0 + pos1.height * 0.6, 0.012, pos1.height * 0.3])
     cbar1 = plt.colorbar(sm1, cax=cax1, ticks=COLOR_BINS, orientation='vertical')
     cbar1.set_ticklabels(['0', '15', '30', '46', '61', '100'])
     cbar1.outline.set_edgecolor('black')
@@ -208,12 +209,13 @@ def create_combined_map(merged_data, output_dir):
 
     _style_axis(ax2, bounds, "(b) Coefficient of Variation (%)")
 
-    # CV colorbar
+    # CV colorbar (inside panel b, upper-right)
     norm2 = BoundaryNorm(CV_BINS, len(CV_COLORS) - 1)
     cmap2 = ListedColormap(CV_COLORS[1:])
     sm2 = plt.cm.ScalarMappable(cmap=cmap2, norm=norm2)
     sm2.set_array([])
-    cax2 = fig.add_axes([0.91, 0.6, 0.012, 0.2])
+    pos2 = ax2.get_position()
+    cax2 = fig.add_axes([pos2.x1 - 0.03, pos2.y0 + pos2.height * 0.6, 0.012, pos2.height * 0.3])
     cbar2 = plt.colorbar(sm2, cax=cax2, ticks=CV_BINS, orientation='vertical')
     cbar2.set_ticklabels(['0', '10', '20', '30', '50', '100'])
     cbar2.outline.set_edgecolor('black')
