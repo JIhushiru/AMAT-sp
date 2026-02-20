@@ -83,9 +83,11 @@ def process_data(data_file, provinces_gdf):
     year_columns = [col for col in df.columns if "Annual" in col]
     df[year_columns] = df[year_columns].apply(pd.to_numeric, errors='coerce')
     df["average_yield"] = df[year_columns].mean(axis=1)
+    df["cv_yield"] = (df[year_columns].std(axis=1) / df[year_columns].mean(axis=1)) * 100
 
     merged = provinces_gdf.merge(df, left_on="NAME_1", right_on="province", how="left")
     merged["average_yield"] = merged["average_yield"].fillna(0)
+    merged["cv_yield"] = merged["cv_yield"].fillna(0)
 
     return merged
 
@@ -159,6 +161,83 @@ def create_map(merged_data, region, output_dir):
     print(f"{region.title()} map saved as {output_path}")
 
 
+CV_BINS = [0, 10, 20, 30, 50, 100]
+CV_COLORS = ["#D3D3D3", "#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"]
+
+
+def create_combined_map(merged_data, output_dir):
+    """Create a two-panel Figure 2: (a) Mean Yield and (b) Coefficient of Variation."""
+    bounds = REGION_BOUNDS["philippines"]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 9))
+
+    # --- Panel (a): Mean Yield ---
+    merged_data[merged_data["average_yield"] == 0].plot(
+        color="#D3D3D3", linewidth=0.8, edgecolor='black', ax=ax1
+    )
+    for i in range(len(COLOR_BINS) - 1):
+        lower = COLOR_BINS[i]
+        upper = COLOR_BINS[i + 1]
+        color = COLORS[i + 1] if i < len(COLORS) - 1 else COLORS[-1]
+        mask = (merged_data["average_yield"] > lower) & (merged_data["average_yield"] <= upper)
+        merged_data[mask].plot(color=color, linewidth=0.3, edgecolor='black', ax=ax1)
+
+    _style_axis(ax1, bounds, "(a) Mean Yield (tons/ha)")
+
+    # Mean Yield colorbar
+    norm1 = BoundaryNorm(COLOR_BINS, len(COLORS) - 1)
+    cmap1 = ListedColormap(COLORS[1:])
+    sm1 = plt.cm.ScalarMappable(cmap=cmap1, norm=norm1)
+    sm1.set_array([])
+    cax1 = fig.add_axes([0.44, 0.6, 0.012, 0.2])
+    cbar1 = plt.colorbar(sm1, cax=cax1, ticks=COLOR_BINS, orientation='vertical')
+    cbar1.set_ticklabels(['0', '15', '30', '46', '61', '100'])
+    cbar1.outline.set_edgecolor('black')
+    cbar1.outline.set_linewidth(0.5)
+
+    # --- Panel (b): Coefficient of Variation ---
+    merged_data[merged_data["cv_yield"] == 0].plot(
+        color="#D3D3D3", linewidth=0.8, edgecolor='black', ax=ax2
+    )
+    for i in range(len(CV_BINS) - 1):
+        lower = CV_BINS[i]
+        upper = CV_BINS[i + 1]
+        color = CV_COLORS[i + 1] if i < len(CV_COLORS) - 1 else CV_COLORS[-1]
+        mask = (merged_data["cv_yield"] > lower) & (merged_data["cv_yield"] <= upper)
+        merged_data[mask].plot(color=color, linewidth=0.3, edgecolor='black', ax=ax2)
+
+    _style_axis(ax2, bounds, "(b) Coefficient of Variation (%)")
+
+    # CV colorbar
+    norm2 = BoundaryNorm(CV_BINS, len(CV_COLORS) - 1)
+    cmap2 = ListedColormap(CV_COLORS[1:])
+    sm2 = plt.cm.ScalarMappable(cmap=cmap2, norm=norm2)
+    sm2.set_array([])
+    cax2 = fig.add_axes([0.91, 0.6, 0.012, 0.2])
+    cbar2 = plt.colorbar(sm2, cax=cax2, ticks=CV_BINS, orientation='vertical')
+    cbar2.set_ticklabels(['0', '10', '20', '30', '50', '100'])
+    cbar2.outline.set_edgecolor('black')
+    cbar2.outline.set_linewidth(0.5)
+
+    plt.subplots_adjust(wspace=0.05)
+    output_path = os.path.join(output_dir, "figure2_mean_yield_and_cv.png")
+    plt.savefig(output_path, dpi=600, bbox_inches='tight')
+    plt.close()
+    print(f"Figure 2 (combined) saved as {output_path}")
+
+
+def _style_axis(ax, bounds, title):
+    """Apply common styling to a map axis."""
+    ax.set_facecolor('white')
+    ax.grid(True, linestyle='-', alpha=0.3, color='gray', zorder=0)
+    ax.set_xlim(bounds['x'])
+    ax.set_ylim(bounds['y'])
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:.0f}° E"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}° N"))
+    ax.tick_params(axis='both', which='major', labelsize=8)
+    ax.set_title(title, fontsize=12, loc='center', pad=10)
+
+
 if __name__ == "__main__":
     provinces_gdf = download_and_load_gadm_data()
     data_file = os.path.join(SCRIPT_DIR, "banana_yield_2010-2024.xlsx")
@@ -168,6 +247,8 @@ if __name__ == "__main__":
 
         for region in REGION_BOUNDS:
             create_map(merged_data, region, SCRIPT_DIR)
+
+        create_combined_map(merged_data, SCRIPT_DIR)
 
         print("All maps created successfully!")
     else:
