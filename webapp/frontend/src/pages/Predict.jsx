@@ -289,20 +289,20 @@ export default function Predict() {
       {!batchMode ? (
         <>
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
               <div>
                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Climate Feature Inputs</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Enter values manually or load province-level averages from the historical dataset
                 </p>
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
                 <SearchableSelect
                   options={provinces || []}
                   value={selectedProvince}
                   onChange={loadProvinceDefaults}
                   placeholder="Search province..."
-                  className="w-56"
+                  className="w-full sm:w-56"
                 />
                 <button
                   onClick={resetToMeans}
@@ -370,7 +370,7 @@ export default function Predict() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
               <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">Prediction Result</h3>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4 border border-emerald-200 dark:border-emerald-700">
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide">Predicted Yield</p>
                   <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
@@ -480,7 +480,7 @@ export default function Predict() {
                   placeholder="All provinces"
                 />
               </div>
-              <div className="flex items-end">
+              <div className="flex items-end sm:col-span-2 lg:col-span-1">
                 <button
                   onClick={handleBatchPredict}
                   disabled={batchPredicting}
