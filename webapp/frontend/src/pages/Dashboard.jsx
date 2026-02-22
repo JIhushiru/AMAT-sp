@@ -6,6 +6,7 @@ import {
 
 export default function Dashboard() {
   const { data, loading, error, retrying, elapsed } = useFetch('/dashboard')
+  const chart = useChartTheme()
 
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
@@ -37,8 +38,6 @@ export default function Dashboard() {
   const bottomProvinces = Object.entries(h.bottom_provinces).map(([name, val]) => ({
     name, yield: val,
   }))
-
-  const chart = useChartTheme()
 
   // Compute yield trend: compare last 3 years avg vs first 3 years avg
   const histOnly = trendData.filter((d) => d.yield != null)
