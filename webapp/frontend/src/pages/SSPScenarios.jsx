@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton, CollapsibleSection } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton, CollapsibleSection, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar, Cell,
@@ -23,6 +23,7 @@ const scenarioInfo = {
 function CompareView() {
   const { data: d245, loading: l245, error: e245, retrying, elapsed } = useFetch('/ssp/ssp245')
   const { data: d585, loading: l585, error: e585 } = useFetch('/ssp/ssp585')
+  const chart = useChartTheme()
 
   if (l245 || l585) return <Loader retrying={retrying} elapsed={elapsed} />
   if (e245) return <ErrorBox message={e245} />
@@ -107,10 +108,10 @@ function CompareView() {
         </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={chart.tooltip} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical" dot={{ r: 3 }} />
             <Line type="monotone" dataKey="ssp245" stroke="#2563eb" strokeWidth={2} strokeDasharray="5 5" name="SSP2-4.5" dot={{ r: 3 }} />
@@ -234,6 +235,7 @@ export default function SSPScenarios() {
 
 function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed, info }) {
   const [showAllProvinces, setShowAllProvinces] = useState(false)
+  const chart = useChartTheme()
 
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
@@ -316,10 +318,10 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
         </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={chart.tooltip} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical (2010\u20132024)" dot={{ r: 3 }} />
             <Line type="monotone" dataKey="future" stroke={info.color} strokeWidth={2} strokeDasharray="5 5" name={`${info.name} (2025\u20132034)`} dot={{ r: 3 }} />
@@ -341,10 +343,10 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
           </div>
           <ResponsiveContainer width="100%" height={showAllProvinces ? 600 : 400}>
             <BarChart data={displayedProvinces}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
               <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 11 }} label={{ value: '% Change', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
-              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Tooltip contentStyle={chart.tooltip} />
               <Bar dataKey="% Change" name="% Change" radius={[4, 4, 0, 0]}>
                 {displayedProvinces.map((entry, i) => (
                   <Cell key={i} fill={(entry['% Change'] || 0) >= 0 ? '#059669' : '#dc2626'} />

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, CollapsibleSection, API_BASE } from '../hooks'
+import { useFetch, Loader, ErrorBox, CollapsibleSection, API_BASE, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, ReferenceLine,
@@ -40,6 +40,7 @@ function buildChartData(provinces, historical, ssp245, ssp585, showSsp245, showS
 }
 
 function ProvinceChart({ title, subtitle, provinces, colors, chartData, showSsp245, showSsp585 }) {
+  const chart = useChartTheme()
   const hasProjections = showSsp245 || showSsp585
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
@@ -47,7 +48,7 @@ function ProvinceChart({ title, subtitle, provinces, colors, chartData, showSsp2
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{subtitle}</p>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
           <XAxis dataKey="year" tick={{ fontSize: 12 }} />
           <YAxis
             domain={['auto', 'auto']}
@@ -55,7 +56,7 @@ function ProvinceChart({ title, subtitle, provinces, colors, chartData, showSsp2
             label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
           />
           <Tooltip
-            contentStyle={{ fontSize: 12 }}
+            contentStyle={chart.tooltip}
             formatter={(value, name) => [
               value != null ? `${value.toFixed(2)} t/ha` : '\u2013',
               name.replace('_ssp245', ' (SSP2-4.5)').replace('_ssp585', ' (SSP5-8.5)'),

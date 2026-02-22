@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { useFetch, Loader, ErrorBox, StatCard } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
@@ -17,6 +17,7 @@ export default function ProvinceDetail() {
   const { name } = useParams()
   const { data, loading, error, retrying, elapsed } = useFetch(`/historical/province/${encodeURIComponent(name)}`)
   const { data: climate } = useFetch('/historical/climate-features')
+  const chart = useChartTheme()
 
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={`Province "${name}" not found. ${error}`} />
@@ -77,10 +78,10 @@ export default function ProvinceDetail() {
         </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 't/ha', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={chart.tooltip} />
             <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>

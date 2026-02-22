@@ -1,4 +1,4 @@
-import { useFetch, StatCard, Loader, ErrorBox } from '../hooks'
+import { useFetch, StatCard, Loader, ErrorBox, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, Cell,
@@ -38,6 +38,7 @@ export default function Dashboard() {
     name, yield: val,
   }))
 
+  const chart = useChartTheme()
   const COLORS_TOP = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
   const COLORS_BOT = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca']
 
@@ -81,10 +82,10 @@ export default function Dashboard() {
         </p>
         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={chart.tooltip} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone" dataKey="yield" stroke="#059669"
@@ -116,10 +117,10 @@ export default function Dashboard() {
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Average yield (2010&ndash;2024)</p>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={topProvinces} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
               <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
               <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Tooltip contentStyle={chart.tooltip} />
               <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {topProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_TOP[i]} />
@@ -136,10 +137,10 @@ export default function Dashboard() {
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Average yield (2010&ndash;2024)</p>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={bottomProvinces} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
               <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
               <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Tooltip contentStyle={chart.tooltip} />
               <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {bottomProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_BOT[i]} />

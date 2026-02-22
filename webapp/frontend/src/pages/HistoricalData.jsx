@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useFetch, Loader, ErrorBox, ExportButton, CollapsibleSection } from '../hooks'
+import { useFetch, Loader, ErrorBox, ExportButton, CollapsibleSection, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ScatterChart, Scatter, ZAxis,
@@ -23,6 +23,7 @@ export default function HistoricalData() {
   const { data: rawData } = useFetch('/historical/data')
   const [selectedFeature, setSelectedFeature] = useState('tmp')
   const [searchTerm, setSearchTerm] = useState('')
+  const chart = useChartTheme()
 
   if (sLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (sErr) return <ErrorBox message={sErr} />
@@ -69,10 +70,10 @@ export default function HistoricalData() {
       <CollapsibleSection title="National Average Yield Trend">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={chart.tooltip} />
             <Line type="monotone" dataKey="yield" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -96,7 +97,7 @@ export default function HistoricalData() {
       >
         <ResponsiveContainer width="100%" height={300}>
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis
               dataKey="x" type="number" tick={{ fontSize: 11 }}
               label={{ value: FEATURE_LABELS[selectedFeature] || selectedFeature, position: 'insideBottom', offset: -5, style: { fontSize: 11 } }}

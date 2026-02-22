@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, ExportButton, SearchableSelect, Accordion } from '../hooks'
+import { useFetch, Loader, ErrorBox, StatCard, ExportButton, SearchableSelect, Accordion, useChartTheme } from '../hooks'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
@@ -44,6 +44,7 @@ export default function Predict() {
   const [batchResults, setBatchResults] = useState(null)
   const [batchPredicting, setBatchPredicting] = useState(false)
   const [batchError, setBatchError] = useState(null)
+  const chart = useChartTheme()
 
   useEffect(() => {
     if (featureData?.stats && Object.keys(featureValues).length === 0) {
@@ -415,10 +416,10 @@ export default function Predict() {
                     ]}
                     layout="vertical"
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
                     <XAxis type="number" tick={{ fontSize: 11 }} />
                     <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                    <Tooltip contentStyle={chart.tooltip} formatter={(v) => `${v.toFixed(2)} t/ha`} />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                       <Cell fill="#059669" />
                       <Cell fill="#6b7280" />
@@ -520,13 +521,13 @@ export default function Predict() {
                   </p>
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={batchByYear}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
                       <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                       <YAxis
                         domain={['auto', 'auto']} tick={{ fontSize: 12 }}
                         label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
                       />
-                      <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                      <Tooltip contentStyle={chart.tooltip} formatter={(v) => `${v.toFixed(2)} t/ha`} />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Line
                         type="monotone"
@@ -555,7 +556,7 @@ export default function Predict() {
                       height={400}
                     >
                       <BarChart data={batchByProvince}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
                         <XAxis
                           dataKey="province"
                           angle={-45}
@@ -564,7 +565,7 @@ export default function Predict() {
                           tick={{ fontSize: 10 }}
                         />
                         <YAxis tick={{ fontSize: 11 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 11 } }} />
-                        <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v) => `${v.toFixed(2)} t/ha`} />
+                        <Tooltip contentStyle={chart.tooltip} formatter={(v) => `${v.toFixed(2)} t/ha`} />
                         <Bar dataKey="predicted_yield" name="Predicted Yield" fill="#059669" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>

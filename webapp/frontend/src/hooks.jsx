@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 // In production, VITE_API_URL points to the HuggingFace Space (e.g. https://xxx.hf.space)
 // In development, it falls back to '/api' which Vite proxies to localhost:8000
@@ -36,6 +36,33 @@ export function useDarkMode() {
   }, [])
 
   return [dark, setDark]
+}
+
+export function useChartTheme() {
+  const [dark, setDark] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  )
+
+  useEffect(() => {
+    const el = document.documentElement
+    const observer = new MutationObserver(() => {
+      setDark(el.classList.contains('dark'))
+    })
+    observer.observe(el, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  return useMemo(() => ({
+    grid: dark ? '#374151' : '#e5e7eb',
+    tooltip: {
+      backgroundColor: dark ? '#1f2937' : '#fff',
+      borderColor: dark ? '#374151' : '#e5e7eb',
+      color: dark ? '#f3f4f6' : '#1f2937',
+      fontSize: 12,
+    },
+    tick: { fontSize: 12, fill: dark ? '#9ca3af' : '#6b7280' },
+    label: { fill: dark ? '#9ca3af' : '#6b7280', fontSize: 12 },
+  }), [dark])
 }
 
 export function useFetch(path) {
