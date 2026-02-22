@@ -128,17 +128,46 @@ export function StatCard({ label, value, sub }) {
   )
 }
 
+function Skeleton({ className = '' }) {
+  return <div className={`animate-pulse rounded bg-gray-200 dark:bg-gray-700 ${className}`} />
+}
+
 export function Loader({ retrying, elapsed }) {
   return (
-    <div className="flex flex-col justify-center items-center py-24 gap-4">
-      <div className="animate-spin h-8 w-8 border-[3px] border-gray-300 dark:border-gray-600 border-t-emerald-600 dark:border-t-emerald-400 rounded-full" />
+    <div className="space-y-6">
+      {/* Title skeleton */}
+      <div className="space-y-2">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-4 w-96 max-w-full" />
+      </div>
+
+      {/* Stat cards skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        ))}
+      </div>
+
+      {/* Chart skeleton */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <Skeleton className="h-5 w-40 mb-2" />
+        <Skeleton className="h-3 w-64 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+
+      {/* Loading status */}
       {elapsed > 5 && (
-        <div className="text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {retrying
-              ? 'Server is waking up, retrying...'
-              : 'Loading data...'}
-          </p>
+        <div className="text-center pt-2">
+          <div className="inline-flex items-center gap-2">
+            <div className="animate-spin h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-emerald-600 dark:border-t-emerald-400 rounded-full" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {retrying ? 'Server is waking up, retrying...' : 'Loading data...'}
+            </p>
+          </div>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             {elapsed}s elapsed
             {elapsed > 15 && ' \u2014 HuggingFace Spaces can take up to a minute on cold start'}
