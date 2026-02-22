@@ -89,7 +89,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5" role="img" aria-label="Line chart showing national banana yield trend from 2010 to 2034">
         <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
           National Yield Trend
         </h3>
@@ -101,7 +101,7 @@ export default function Dashboard() {
             <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
             <XAxis dataKey="year" tick={{ fontSize: 12 }} />
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
-            <Tooltip contentStyle={chart.tooltip} />
+            <Tooltip contentStyle={chart.tooltip} formatter={(v) => [`${Number(v).toFixed(2)} t/ha`]} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Line
               type="monotone" dataKey="yield" stroke="#059669"
@@ -126,7 +126,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5" role="img" aria-label="Bar chart of top 5 provinces by average banana yield">
           <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
             Top 5 Provinces by Yield
           </h3>
@@ -136,7 +136,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
               <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
               <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={chart.tooltip} />
+              <Tooltip contentStyle={chart.tooltip} formatter={(v) => [`${Number(v).toFixed(2)} t/ha`]} />
               <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {topProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_TOP[i]} />
@@ -146,7 +146,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5" role="img" aria-label="Bar chart of bottom 5 provinces by average banana yield">
           <h3 className="text-base font-semibold mb-1 text-gray-800 dark:text-gray-200">
             Bottom 5 Provinces by Yield
           </h3>
@@ -156,7 +156,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
               <XAxis type="number" tick={{ fontSize: 11 }} label={{ value: 't/ha', position: 'insideBottom', offset: -5, style: { fontSize: 11 } }} />
               <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={chart.tooltip} />
+              <Tooltip contentStyle={chart.tooltip} formatter={(v) => [`${Number(v).toFixed(2)} t/ha`]} />
               <Bar dataKey="yield" name="Avg Yield" radius={[0, 4, 4, 0]}>
                 {bottomProvinces.map((_, i) => (
                   <Cell key={i} fill={COLORS_BOT[i]} />
