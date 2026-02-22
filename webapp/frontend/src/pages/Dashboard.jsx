@@ -39,6 +39,17 @@ export default function Dashboard() {
   }))
 
   const chart = useChartTheme()
+
+  // Compute yield trend: compare last 3 years avg vs first 3 years avg
+  const histOnly = trendData.filter((d) => d.yield != null)
+  const yieldTrend = histOnly.length >= 6
+    ? (() => {
+        const early = histOnly.slice(0, 3).reduce((s, d) => s + d.yield, 0) / 3
+        const late = histOnly.slice(-3).reduce((s, d) => s + d.yield, 0) / 3
+        return ((late - early) / early) * 100
+      })()
+    : null
+
   const COLORS_TOP = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
   const COLORS_BOT = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca']
 
@@ -61,7 +72,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="National Avg Yield" value={`${h.national_avg} t/ha`} />
+        <StatCard label="National Avg Yield" value={`${h.national_avg} t/ha`} trend={yieldTrend} sub="vs. early period" />
         <StatCard label="Provinces" value={h.total_provinces} />
         <StatCard
           label="Year Range"

@@ -118,11 +118,26 @@ export function useFetch(path) {
   return { data, loading, error, retrying, elapsed }
 }
 
-export function StatCard({ label, value, sub }) {
+export function StatCard({ label, value, sub, trend }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-1">{value}</p>
+      <div className="flex items-center gap-2 mt-1">
+        <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+        {trend != null && trend !== 0 && (
+          <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${
+            trend > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+          }`}>
+            <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              {trend > 0
+                ? <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                : <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              }
+            </svg>
+            {Math.abs(trend).toFixed(1)}%
+          </span>
+        )}
+      </div>
       {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
     </div>
   )
