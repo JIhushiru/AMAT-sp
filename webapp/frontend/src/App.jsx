@@ -107,17 +107,35 @@ export default function App() {
         </Page>
       </main>
 
-      <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-5 text-center space-y-1">
-          <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">
-            Geospatial Machine Learning for Predicting Banana Yield in the Philippines Under Climate Uncertainty
-          </p>
-          <p className="text-[11px] text-gray-400 dark:text-gray-500">
-            Institute of Mathematical Sciences &middot; College of Arts and Sciences &middot; University of the Philippines Los Ba&ntilde;os
-          </p>
-          <p className="text-[11px] text-gray-400 dark:text-gray-500">
-            <a href="https://jhraportfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition">Arsolon, J.H.R.</a> (2025) &middot; Adviser: Dr. Destiny SM. Lutero &middot; Co-adviser: Dr. Mark Lexter De Lara
-          </p>
+      <footer className="mt-auto">
+        <div className="h-1 bg-linear-to-r from-emerald-500 via-teal-500 to-emerald-600" />
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="grid sm:grid-cols-3 gap-4 text-[11px]">
+              <div>
+                <p className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1.5">Research</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Geospatial Machine Learning for Predicting Banana Yield in the Philippines Under Climate Uncertainty
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1.5">Institution</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Institute of Mathematical Sciences<br />
+                  College of Arts and Sciences<br />
+                  University of the Philippines Los Ba&ntilde;os
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-1.5">Authors</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                  <a href="https://jhraportfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition font-medium">Arsolon, J.H.R.</a> (2025)<br />
+                  Adviser: Dr. Destiny SM. Lutero<br />
+                  Co-adviser: Dr. Mark Lexter De Lara
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
