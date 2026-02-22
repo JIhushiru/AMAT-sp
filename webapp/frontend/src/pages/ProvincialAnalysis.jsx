@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, CollapsibleSection, API_BASE, useChartTheme } from '../hooks'
 import {
@@ -165,8 +165,8 @@ export default function ProvincialAnalysis() {
   const { top5, bottom5, province_avg, historical, ssp245, ssp585 } = data
   const hasSsp = !!(ssp245 || ssp585)
 
-  const topChartData = buildChartData(top5, historical, ssp245, ssp585, showSsp245, showSsp585)
-  const botChartData = buildChartData(bottom5, historical, ssp245, ssp585, showSsp245, showSsp585)
+  const topChartData = useMemo(() => buildChartData(top5, historical, ssp245, ssp585, showSsp245, showSsp585), [top5, historical, ssp245, ssp585, showSsp245, showSsp585])
+  const botChartData = useMemo(() => buildChartData(bottom5, historical, ssp245, ssp585, showSsp245, showSsp585), [bottom5, historical, ssp245, ssp585, showSsp245, showSsp585])
 
   return (
     <div className="space-y-6">
@@ -255,6 +255,7 @@ export default function ProvincialAnalysis() {
                 src={`${API_BASE}/training/plot/${file}`}
                 alt={label}
                 className="w-full rounded border border-gray-200 dark:border-gray-700"
+                loading="lazy"
               />
             </div>
           ))}

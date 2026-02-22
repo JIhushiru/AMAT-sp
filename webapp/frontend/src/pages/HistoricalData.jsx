@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, ExportButton, CollapsibleSection, useChartTheme } from '../hooks'
 import {
@@ -50,15 +50,15 @@ export default function HistoricalData() {
     else { setSortCol(col); setSortAsc(col === 'name') }
   }
 
-  const scatterData = rawData
+  const scatterData = useMemo(() => rawData
     ? rawData.map((r) => ({
         x: r[selectedFeature],
         y: r.yield,
         province: r.province,
       }))
-    : []
+    : [], [rawData, selectedFeature])
 
-  const yieldCorrelations = correlation
+  const yieldCorrelations = useMemo(() => correlation
     ? correlation.columns
         .map((col, i) => ({
           feature: col,
@@ -66,7 +66,7 @@ export default function HistoricalData() {
         }))
         .filter((d) => d.feature !== 'yield')
         .sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr))
-    : []
+    : [], [correlation])
 
   return (
     <div className="space-y-6">

@@ -86,6 +86,7 @@ export default function ModelResults() {
             src={`${API_BASE}/training/plot/${plot.name}`}
             alt={plot.label}
             className="w-full max-w-4xl mx-auto rounded"
+            loading="lazy"
           />
         </div>
       ))}

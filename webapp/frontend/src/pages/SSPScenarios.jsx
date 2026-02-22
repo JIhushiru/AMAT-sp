@@ -356,6 +356,7 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
                   src={`${API_BASE}/ssp/${scenario}/plot/${plot}`}
                   alt={plot}
                   className="w-full rounded border border-gray-200 dark:border-gray-600"
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -378,6 +379,7 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
                   src={`${API_BASE}/ssp/${scenario}/plot/${img}`}
                   alt={img}
                   className="w-full rounded border border-gray-200 dark:border-gray-600"
+                  loading="lazy"
                 />
               </div>
             ))}

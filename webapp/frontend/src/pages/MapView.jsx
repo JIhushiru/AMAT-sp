@@ -202,6 +202,7 @@ export default function MapView() {
                         src={`${API_BASE}/map/image/${img.name}`}
                         alt={`${cfg.title} - ${img.label}`}
                         className="w-full rounded"
+                        loading="lazy"
                       />
                     </div>
                   ))}

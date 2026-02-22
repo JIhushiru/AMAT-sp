@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 
 // In production, VITE_API_URL points to the HuggingFace Space (e.g. https://xxx.hf.space)
 // In development, it falls back to '/api' which Vite proxies to localhost:8000
@@ -118,7 +118,7 @@ export function useFetch(path) {
   return { data, loading, error, retrying, elapsed }
 }
 
-export function StatCard({ label, value, sub, trend }) {
+export const StatCard = memo(function StatCard({ label, value, sub, trend }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</p>
@@ -141,7 +141,7 @@ export function StatCard({ label, value, sub, trend }) {
       {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
     </div>
   )
-}
+})
 
 function Skeleton({ className = '' }) {
   return <div className={`animate-pulse rounded bg-gray-200 dark:bg-gray-700 ${className}`} />

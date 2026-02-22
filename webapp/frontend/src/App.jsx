@@ -1,13 +1,15 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
-import { useDarkMode } from './hooks'
-import Dashboard from './pages/Dashboard'
-import MapView from './pages/MapView'
-import HistoricalData from './pages/HistoricalData'
-import ModelResults from './pages/ModelResults'
-import SSPScenarios from './pages/SSPScenarios'
-import ProvinceDetail from './pages/ProvinceDetail'
-import Predict from './pages/Predict'
-import ProvincialAnalysis from './pages/ProvincialAnalysis'
+import { useDarkMode, Loader } from './hooks'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const MapView = lazy(() => import('./pages/MapView'))
+const HistoricalData = lazy(() => import('./pages/HistoricalData'))
+const ModelResults = lazy(() => import('./pages/ModelResults'))
+const SSPScenarios = lazy(() => import('./pages/SSPScenarios'))
+const ProvinceDetail = lazy(() => import('./pages/ProvinceDetail'))
+const Predict = lazy(() => import('./pages/Predict'))
+const ProvincialAnalysis = lazy(() => import('./pages/ProvincialAnalysis'))
 
 const NAV_ICONS = {
   '/': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4',
@@ -93,18 +95,20 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-3 md:px-6 py-6 md:py-8 flex-1 w-full">
-        <Page>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/map" element={<MapView />} />
-            <Route path="/historical" element={<HistoricalData />} />
-            <Route path="/provincial" element={<ProvincialAnalysis />} />
-            <Route path="/models" element={<ModelResults />} />
-            <Route path="/ssp" element={<SSPScenarios />} />
-            <Route path="/predict" element={<Predict />} />
-            <Route path="/province/:name" element={<ProvinceDetail />} />
-          </Routes>
-        </Page>
+        <Suspense fallback={<Loader />}>
+          <Page>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/map" element={<MapView />} />
+              <Route path="/historical" element={<HistoricalData />} />
+              <Route path="/provincial" element={<ProvincialAnalysis />} />
+              <Route path="/models" element={<ModelResults />} />
+              <Route path="/ssp" element={<SSPScenarios />} />
+              <Route path="/predict" element={<Predict />} />
+              <Route path="/province/:name" element={<ProvinceDetail />} />
+            </Routes>
+          </Page>
+        </Suspense>
       </main>
 
       <footer className="mt-auto">

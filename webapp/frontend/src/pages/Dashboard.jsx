@@ -1,56 +1,60 @@
+import { useMemo } from 'react'
 import { useFetch, StatCard, Loader, ErrorBox, useChartTheme, CollapsibleSection } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, Cell,
 } from 'recharts'
 
+const COLORS_TOP = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
+const COLORS_BOT = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca']
+
 export default function Dashboard() {
   const { data, loading, error, retrying, elapsed } = useFetch('/dashboard')
   const chart = useChartTheme()
+
+  const { trendData, topProvinces, bottomProvinces, yieldTrend } = useMemo(() => {
+    if (!data) return { trendData: [], topProvinces: [], bottomProvinces: [], yieldTrend: null }
+    const h = data.historical
+    const td = Object.entries(h.national_trend).map(([year, val]) => ({
+      year: +year, yield: val,
+    }))
+    if (data.ssp245_national_trend) {
+      Object.entries(data.ssp245_national_trend).forEach(([year, val]) => {
+        const existing = td.find((d) => d.year === +year)
+        if (existing) existing.ssp245 = val
+        else td.push({ year: +year, ssp245: val })
+      })
+    }
+    if (data.ssp585_national_trend) {
+      Object.entries(data.ssp585_national_trend).forEach(([year, val]) => {
+        const existing = td.find((d) => d.year === +year)
+        if (existing) existing.ssp585 = val
+        else td.push({ year: +year, ssp585: val })
+      })
+    }
+    td.sort((a, b) => a.year - b.year)
+
+    const histOnly = td.filter((d) => d.yield != null)
+    const yt = histOnly.length >= 6
+      ? (() => {
+          const early = histOnly.slice(0, 3).reduce((s, d) => s + d.yield, 0) / 3
+          const late = histOnly.slice(-3).reduce((s, d) => s + d.yield, 0) / 3
+          return ((late - early) / early) * 100
+        })()
+      : null
+
+    return {
+      trendData: td,
+      topProvinces: Object.entries(h.top_provinces).map(([name, val]) => ({ name, yield: val })),
+      bottomProvinces: Object.entries(h.bottom_provinces).map(([name, val]) => ({ name, yield: val })),
+      yieldTrend: yt,
+    }
+  }, [data])
 
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   const h = data.historical
-  const trendData = Object.entries(h.national_trend).map(([year, val]) => ({
-    year: +year, yield: val,
-  }))
-
-  if (data.ssp245_national_trend) {
-    Object.entries(data.ssp245_national_trend).forEach(([year, val]) => {
-      const existing = trendData.find((d) => d.year === +year)
-      if (existing) existing.ssp245 = val
-      else trendData.push({ year: +year, ssp245: val })
-    })
-  }
-  if (data.ssp585_national_trend) {
-    Object.entries(data.ssp585_national_trend).forEach(([year, val]) => {
-      const existing = trendData.find((d) => d.year === +year)
-      if (existing) existing.ssp585 = val
-      else trendData.push({ year: +year, ssp585: val })
-    })
-  }
-  trendData.sort((a, b) => a.year - b.year)
-
-  const topProvinces = Object.entries(h.top_provinces).map(([name, val]) => ({
-    name, yield: val,
-  }))
-  const bottomProvinces = Object.entries(h.bottom_provinces).map(([name, val]) => ({
-    name, yield: val,
-  }))
-
-  // Compute yield trend: compare last 3 years avg vs first 3 years avg
-  const histOnly = trendData.filter((d) => d.yield != null)
-  const yieldTrend = histOnly.length >= 6
-    ? (() => {
-        const early = histOnly.slice(0, 3).reduce((s, d) => s + d.yield, 0) / 3
-        const late = histOnly.slice(-3).reduce((s, d) => s + d.yield, 0) / 3
-        return ((late - early) / early) * 100
-      })()
-    : null
-
-  const COLORS_TOP = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
-  const COLORS_BOT = ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#fecaca']
 
   return (
     <div className="space-y-6">
