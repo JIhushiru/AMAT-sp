@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useFetch, Loader, ErrorBox, CollapsibleSection, API_BASE, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -197,14 +198,14 @@ export default function ProvincialAnalysis() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {top5.map((prov, i) => (
-          <div key={prov} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <Link key={prov} to={`/province/${encodeURIComponent(prov)}`} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TOP_COLORS[i] }} />
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">#{i + 1}</span>
             </div>
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{prov}</p>
             <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{province_avg[prov]} t/ha</p>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -220,14 +221,14 @@ export default function ProvincialAnalysis() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {bottom5.map((prov, i) => (
-          <div key={prov} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <Link key={prov} to={`/province/${encodeURIComponent(prov)}`} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:border-red-400 dark:hover:border-red-600 transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: BOT_COLORS[i] }} />
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">#{82 - 4 + i}</span>
             </div>
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{prov}</p>
             <p className="text-lg font-bold text-red-600 dark:text-red-400">{province_avg[prov]} t/ha</p>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -275,9 +276,11 @@ export default function ProvincialAnalysis() {
               {top5.map((prov, i) => (
                 <tr key={prov} className="border-t border-gray-100 dark:border-gray-700">
                   <td className="p-2 text-gray-400 text-xs">{i + 1}</td>
-                  <td className="p-2 font-medium text-gray-700 dark:text-gray-200">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: TOP_COLORS[i] }} />
-                    {prov}
+                  <td className="p-2 font-medium">
+                    <Link to={`/province/${encodeURIComponent(prov)}`} className="text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: TOP_COLORS[i] }} />
+                      {prov}
+                    </Link>
                   </td>
                   <td className="p-2 text-right font-mono text-emerald-700 dark:text-emerald-400">{province_avg[prov]}</td>
                   <td className="p-2">
@@ -290,9 +293,11 @@ export default function ProvincialAnalysis() {
               {bottom5.map((prov, i) => (
                 <tr key={prov} className="border-t border-gray-100 dark:border-gray-700">
                   <td className="p-2 text-gray-400 text-xs">{78 + i}</td>
-                  <td className="p-2 font-medium text-gray-700 dark:text-gray-200">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: BOT_COLORS[i] }} />
-                    {prov}
+                  <td className="p-2 font-medium">
+                    <Link to={`/province/${encodeURIComponent(prov)}`} className="text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: BOT_COLORS[i] }} />
+                      {prov}
+                    </Link>
                   </td>
                   <td className="p-2 text-right font-mono text-red-600 dark:text-red-400">{province_avg[prov]}</td>
                   <td className="p-2">
