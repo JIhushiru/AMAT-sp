@@ -8,7 +8,9 @@ export const API_BASE = API
 export function useDarkMode() {
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false
-    return localStorage.getItem('theme') === 'dark'
+    const stored = localStorage.getItem('theme')
+    if (stored) return stored === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
   useEffect(() => {
@@ -21,6 +23,17 @@ export function useDarkMode() {
       localStorage.setItem('theme', 'light')
     }
   }, [dark])
+
+  // Listen for system theme changes when user hasn't explicitly toggled
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e) => {
+      const stored = localStorage.getItem('theme')
+      if (!stored) setDark(e.matches)
+    }
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   return [dark, setDark]
 }
