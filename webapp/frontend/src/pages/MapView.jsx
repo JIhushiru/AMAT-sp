@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
-import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
+import { useFetch, Loader, ErrorBox, EmptyState, API_BASE } from '../hooks'
 
 const YIELD_BINS = [
   { min: 0, max: 15, color: '#fde725', label: '0\u201315' },
@@ -186,9 +186,10 @@ export default function MapView() {
             const cfg = layerConfig[dataLayer]
             const imgs = mapImages?.filter((img) => (img.category || 'historical') === dataLayer)
             if (!imgs?.length) return (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
-                <p className="text-sm">No static maps available for {cfg.title}. Generate choropleth maps first.</p>
-              </div>
+              <EmptyState
+                title={`No static maps for ${cfg.title}`}
+                message="Generate choropleth maps first by running the mapping pipeline."
+              />
             )
             return (
               <div>

@@ -1,4 +1,4 @@
-import { useFetch, Loader, ErrorBox, API_BASE } from '../hooks'
+import { useFetch, Loader, ErrorBox, EmptyState, API_BASE } from '../hooks'
 
 export default function ModelResults() {
   const { data: plots, loading, error, retrying, elapsed } = useFetch('/training/plots')
@@ -10,10 +10,10 @@ export default function ModelResults() {
     return (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Model Training Results</h2>
-        <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 text-yellow-800 dark:text-yellow-200">
-          No training plots found. Run <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">python regression.py</code> in the
-          Training directory to generate results.
-        </div>
+        <EmptyState
+          title="No training plots found"
+          message="Run python regression.py in the Training directory to generate model evaluation results."
+        />
       </div>
     )
   }

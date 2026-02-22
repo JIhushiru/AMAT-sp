@@ -342,6 +342,22 @@ export function Accordion({ title, defaultOpen = true, children, badge }) {
   )
 }
 
+export function EmptyState({ title, message, icon }) {
+  return (
+    <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-lg p-6 text-center">
+      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-3">
+        {icon || (
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        )}
+      </div>
+      <h4 className="font-semibold text-sm text-amber-800 dark:text-amber-300">{title}</h4>
+      {message && <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 leading-relaxed max-w-md mx-auto">{message}</p>}
+    </div>
+  )
+}
+
 export function ErrorBox({ message }) {
   const isServerDown = message.includes('Failed to fetch') || message.includes('503') || message.includes('502')
   return (

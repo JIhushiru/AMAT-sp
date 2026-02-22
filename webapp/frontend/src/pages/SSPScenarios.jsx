@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFetch, Loader, ErrorBox, StatCard, API_BASE, ExportButton, CollapsibleSection, useChartTheme } from '../hooks'
+import { useFetch, Loader, ErrorBox, EmptyState, StatCard, API_BASE, ExportButton, CollapsibleSection, useChartTheme } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, BarChart, Bar, Cell,
@@ -31,14 +31,10 @@ function CompareView() {
 
   if (!d245?.available || !d585?.available) {
     return (
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
-        <h3 className="font-semibold text-lg mb-2">Both SSP datasets required for comparison</h3>
-        <p className="text-sm">
-          {!d245?.available && 'SSP2-4.5 data not available. '}
-          {!d585?.available && 'SSP5-8.5 data not available. '}
-          Run the SSP pipeline for both scenarios first.
-        </p>
-      </div>
+      <EmptyState
+        title="Both SSP datasets required for comparison"
+        message={`${!d245?.available ? 'SSP2-4.5 data not available. ' : ''}${!d585?.available ? 'SSP5-8.5 data not available. ' : ''}Run the SSP pipeline for both scenarios first.`}
+      />
     )
   }
 
@@ -242,19 +238,10 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
 
   if (!data?.available) {
     return (
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-yellow-800 dark:text-yellow-300">
-        <h3 className="font-semibold text-lg mb-2">{info.name} Data Not Available</h3>
-        <p className="mb-4 text-sm">{info.desc}</p>
-        <p className="text-xs font-medium mb-2">Run the SSP pipeline to generate predictions:</p>
-        <ol className="list-decimal ml-5 mt-2 text-xs space-y-1">
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python gee_to_gdrive.py</code> &mdash; Export climate data</li>
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python tif_to_excel.py</code> &mdash; Extract province-level features</li>
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python merge_excels.py</code> &mdash; Merge historical + SSP data</li>
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python future_predictions.py</code> &mdash; Predict 2025&ndash;2034</li>
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python projections.py</code> &mdash; Generate visualizations</li>
-          <li><code className="bg-yellow-100 dark:bg-yellow-800/50 px-1 rounded">python shap_analysis.py</code> &mdash; SHAP analysis</li>
-        </ol>
-      </div>
+      <EmptyState
+        title={`${info.name} Data Not Available`}
+        message={`${info.desc} Run the SSP pipeline (gee_to_gdrive.py, tif_to_excel.py, merge_excels.py, future_predictions.py, projections.py, shap_analysis.py) to generate predictions.`}
+      />
     )
   }
 
