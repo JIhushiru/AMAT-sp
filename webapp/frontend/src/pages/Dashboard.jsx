@@ -1,4 +1,4 @@
-import { useFetch, StatCard, Loader, ErrorBox, useChartTheme } from '../hooks'
+import { useFetch, StatCard, Loader, ErrorBox, useChartTheme, CollapsibleSection } from '../hooks'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend, Cell,
@@ -166,6 +166,38 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      <CollapsibleSection title="About This Study" defaultOpen={false}>
+        <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-600 dark:text-gray-400">
+          <div>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-xs uppercase tracking-wide">Data Sources</h4>
+            <ul className="space-y-1.5 text-xs leading-relaxed">
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Yield data:</span> Philippine Statistics Authority (PSA), 2010&ndash;2024</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Climate:</span> CRU-TS &amp; TerraClimate gridded datasets (17 variables)</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Future climate:</span> NASA NEX-GDDP-CMIP6 via Google Earth Engine</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Boundaries:</span> GADM v4.1 Philippine province shapefiles</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-xs uppercase tracking-wide">Methodology</h4>
+            <ul className="space-y-1.5 text-xs leading-relaxed">
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Models:</span> Cubist, GBM, MARS, Random Forest, SVM, XGBoost</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Validation:</span> Time Series 5-fold CV (temporal order preserved)</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Feature selection:</span> Boruta algorithm + VIF filtering (threshold 5.0)</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Best model:</span> Cubist (used for 2025&ndash;2034 projections)</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-xs uppercase tracking-wide">Climate Scenarios</h4>
+            <ul className="space-y-1.5 text-xs leading-relaxed">
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">SSP2-4.5:</span> Middle-of-the-road; CO&#x2082; stabilizes mid-century</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">SSP5-8.5:</span> Fossil-fueled development; continued emissions rise</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Ensemble:</span> 5-GCM mean with delta bias correction</li>
+              <li><span className="font-medium text-gray-700 dark:text-gray-300">Horizon:</span> 2025&ndash;2034 (10-year projection window)</li>
+            </ul>
+          </div>
+        </div>
+      </CollapsibleSection>
     </div>
   )
 }
