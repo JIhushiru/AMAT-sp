@@ -293,7 +293,7 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
               : 'N/A'
           }
         />
-        <StatCard label="Projection Period" value="2025\u20132034" sub="5-GCM ensemble / CMIP6" />
+        <StatCard label="Projection Period" value={"2025\u20132034"} sub="5-GCM ensemble / CMIP6" />
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
@@ -310,7 +310,7 @@ function SingleScenarioView({ scenario, data, loading, error, retrying, elapsed,
             <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }} />
             <Tooltip contentStyle={chart.tooltip} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name="Historical (2010\u20132024)" dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="historical" stroke="#059669" strokeWidth={2} name={"Historical (2010\u20132024)"} dot={{ r: 3 }} />
             <Line type="monotone" dataKey="future" stroke={info.color} strokeWidth={2} strokeDasharray="5 5" name={`${info.name} (2025\u20132034)`} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>

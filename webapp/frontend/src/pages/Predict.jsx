@@ -390,7 +390,7 @@ export default function Predict() {
                 <StatCard
                   label="National Average"
                   value={`${prediction.context.national_avg} t/ha`}
-                  sub="Historical 2010\u20132024"
+                  sub={"Historical 2010\u20132024"}
                 />
                 <StatCard
                   label="vs. National Avg"
