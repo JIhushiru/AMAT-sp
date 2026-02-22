@@ -100,8 +100,15 @@ export default function MapView() {
       { sticky: true }
     )
     layer.on({
-      mouseover: () => setHoveredProvince({ name, yield: val }),
-      mouseout: () => setHoveredProvince(null),
+      mouseover: (e) => {
+        setHoveredProvince({ name, yield: val })
+        e.target.setStyle({ weight: 3, color: '#fff', fillOpacity: 0.95 })
+        e.target.bringToFront()
+      },
+      mouseout: (e) => {
+        setHoveredProvince(null)
+        e.target.setStyle({ weight: 1, color: '#666', fillOpacity: 0.8 })
+      },
       click: () => navigate(`/province/${encodeURIComponent(name)}`),
     })
   }
@@ -224,7 +231,8 @@ export default function MapView() {
             </MapContainer>
           )}
 
-          <div className="absolute bottom-6 left-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-1000 border border-gray-200 dark:border-gray-700">
+          {/* Legend */}
+          <div className="absolute bottom-6 left-6 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg p-3 z-1000 border border-gray-200 dark:border-gray-700">
             <p className="text-[10px] font-semibold mb-1.5 text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               Yield (t/ha)
               {dataLayer !== 'historical' && (
@@ -247,17 +255,21 @@ export default function MapView() {
               No data
             </div>
           </div>
-        </div>
-      )}
 
-      {hoveredProvince && (
-        <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-50 border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-sm text-gray-800 dark:text-gray-100">{hoveredProvince.name}</p>
-          <p className="text-emerald-700 dark:text-emerald-400 font-bold">
-            {hoveredProvince.yield
-              ? `${hoveredProvince.yield.toFixed(2)} t/ha`
-              : 'No data'}
-          </p>
+          {/* Hover info */}
+          <div className={`absolute top-4 right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg p-3 z-1000 border border-gray-200 dark:border-gray-700 transition-opacity ${hoveredProvince ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {hoveredProvince ? (
+              <>
+                <p className="font-semibold text-sm text-gray-800 dark:text-gray-100">{hoveredProvince.name}</p>
+                <p className="text-emerald-700 dark:text-emerald-400 font-bold text-lg">
+                  {hoveredProvince.yield ? `${hoveredProvince.yield.toFixed(2)} t/ha` : 'No data'}
+                </p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Click for details</p>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400 dark:text-gray-500">Hover over a province</p>
+            )}
+          </div>
         </div>
       )}
     </div>
