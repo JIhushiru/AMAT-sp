@@ -159,14 +159,20 @@ export default function ProvincialAnalysis() {
   const [showSsp245, setShowSsp245] = useState(false)
   const [showSsp585, setShowSsp585] = useState(false)
 
+  const topChartData = useMemo(() => {
+    if (!data) return []
+    return buildChartData(data.top5, data.historical, data.ssp245, data.ssp585, showSsp245, showSsp585)
+  }, [data, showSsp245, showSsp585])
+  const botChartData = useMemo(() => {
+    if (!data) return []
+    return buildChartData(data.bottom5, data.historical, data.ssp245, data.ssp585, showSsp245, showSsp585)
+  }, [data, showSsp245, showSsp585])
+
   if (loading) return <Loader retrying={retrying} elapsed={elapsed} />
   if (error) return <ErrorBox message={error} />
 
   const { top5, bottom5, province_avg, historical, ssp245, ssp585 } = data
   const hasSsp = !!(ssp245 || ssp585)
-
-  const topChartData = useMemo(() => buildChartData(top5, historical, ssp245, ssp585, showSsp245, showSsp585), [top5, historical, ssp245, ssp585, showSsp245, showSsp585])
-  const botChartData = useMemo(() => buildChartData(bottom5, historical, ssp245, ssp585, showSsp245, showSsp585), [bottom5, historical, ssp245, ssp585, showSsp245, showSsp585])
 
   return (
     <div className="space-y-6">

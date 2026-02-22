@@ -27,6 +27,24 @@ export default function HistoricalData() {
   const [sortAsc, setSortAsc] = useState(false)
   const chart = useChartTheme()
 
+  const scatterData = useMemo(() => rawData
+    ? rawData.map((r) => ({
+        x: r[selectedFeature],
+        y: r.yield,
+        province: r.province,
+      }))
+    : [], [rawData, selectedFeature])
+
+  const yieldCorrelations = useMemo(() => correlation
+    ? correlation.columns
+        .map((col, i) => ({
+          feature: col,
+          corr: correlation.data[correlation.columns.indexOf('yield')]?.[i] || 0,
+        }))
+        .filter((d) => d.feature !== 'yield')
+        .sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr))
+    : [], [correlation])
+
   if (sLoad) return <Loader retrying={retrying} elapsed={elapsed} />
   if (sErr) return <ErrorBox message={sErr} />
 
@@ -49,24 +67,6 @@ export default function HistoricalData() {
     if (sortCol === col) setSortAsc(!sortAsc)
     else { setSortCol(col); setSortAsc(col === 'name') }
   }
-
-  const scatterData = useMemo(() => rawData
-    ? rawData.map((r) => ({
-        x: r[selectedFeature],
-        y: r.yield,
-        province: r.province,
-      }))
-    : [], [rawData, selectedFeature])
-
-  const yieldCorrelations = useMemo(() => correlation
-    ? correlation.columns
-        .map((col, i) => ({
-          feature: col,
-          corr: correlation.data[correlation.columns.indexOf('yield')]?.[i] || 0,
-        }))
-        .filter((d) => d.feature !== 'yield')
-        .sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr))
-    : [], [correlation])
 
   return (
     <div className="space-y-6">
