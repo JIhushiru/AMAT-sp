@@ -44,13 +44,18 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-3xl leading-relaxed">
-          Overview of banana yield across 82 Philippine provinces using historical production
-          data (2010&ndash;2024) from PSA and climate variables from CRU-TS,
+      <div className="bg-linear-to-r from-emerald-600 to-teal-600 dark:from-emerald-800 dark:to-teal-800 rounded-xl p-6 md:p-8 text-white">
+        <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider mb-2">
+          UPLB &middot; Institute of Mathematical Sciences
+        </p>
+        <h2 className="text-xl md:text-2xl font-bold leading-snug">
+          Geospatial Machine Learning for Predicting Banana Yield in the Philippines Under Climate Uncertainty
+        </h2>
+        <p className="text-emerald-100 text-sm mt-3 max-w-3xl leading-relaxed">
+          Analyzing yield across {h.total_provinces} provinces using historical production
+          data (2010&ndash;2024) from PSA and 17 climate variables from CRU-TS,
           TerraClimate, and NASA NEX-GDDP-CMIP6. Future projections
-          (2025&ndash;2034) are generated under SSP2-4.5 and SSP5-8.5 scenarios
+          (2025&ndash;2034) generated under SSP2-4.5 and SSP5-8.5 scenarios
           using a five-model CMIP6 ensemble.
         </p>
       </div>
