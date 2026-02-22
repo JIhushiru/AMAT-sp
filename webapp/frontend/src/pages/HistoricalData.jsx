@@ -23,6 +23,8 @@ export default function HistoricalData() {
   const { data: rawData } = useFetch('/historical/data')
   const [selectedFeature, setSelectedFeature] = useState('tmp')
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortCol, setSortCol] = useState('yield') // 'name' or 'yield'
+  const [sortAsc, setSortAsc] = useState(false)
   const chart = useChartTheme()
 
   if (sLoad) return <Loader retrying={retrying} elapsed={elapsed} />
@@ -35,7 +37,18 @@ export default function HistoricalData() {
   const provinces = summary
     ? Object.entries(summary.province_avg)
         .filter(([name]) => name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+          const cmp = sortCol === 'name'
+            ? a[0].localeCompare(b[0])
+            : a[1] - b[1]
+          return sortAsc ? cmp : -cmp
+        })
     : []
+
+  const handleSort = (col) => {
+    if (sortCol === col) setSortAsc(!sortAsc)
+    else { setSortCol(col); setSortAsc(col === 'name') }
+  }
 
   const scatterData = rawData
     ? rawData.map((r) => ({
@@ -170,8 +183,18 @@ export default function HistoricalData() {
             <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="text-left p-2 text-gray-500 dark:text-gray-400">#</th>
-                <th className="text-left p-2 text-gray-500 dark:text-gray-400">Province</th>
-                <th className="text-right p-2 text-gray-500 dark:text-gray-400">Avg Yield (t/ha)</th>
+                <th
+                  className="text-left p-2 text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                  onClick={() => handleSort('name')}
+                >
+                  Province {sortCol === 'name' && (sortAsc ? '\u2191' : '\u2193')}
+                </th>
+                <th
+                  className="text-right p-2 text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                  onClick={() => handleSort('yield')}
+                >
+                  Avg Yield (t/ha) {sortCol === 'yield' && (sortAsc ? '\u2191' : '\u2193')}
+                </th>
                 <th className="p-2"></th>
               </tr>
             </thead>
