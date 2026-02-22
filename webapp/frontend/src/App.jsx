@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink } from 'react-router-dom'
+import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { useDarkMode } from './hooks'
 import Dashboard from './pages/Dashboard'
 import MapView from './pages/MapView'
@@ -18,6 +18,11 @@ const NAV_ITEMS = [
   { to: '/ssp', label: 'SSP Scenarios' },
   { to: '/predict', label: 'Predict' },
 ]
+
+function Page({ children }) {
+  const location = useLocation()
+  return <div key={location.pathname} className="page-enter">{children}</div>
+}
 
 export default function App() {
   const [dark, setDark] = useDarkMode()
@@ -71,16 +76,18 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-3 md:px-6 py-6 md:py-8 flex-1 w-full">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/map" element={<MapView />} />
-          <Route path="/historical" element={<HistoricalData />} />
-          <Route path="/provincial" element={<ProvincialAnalysis />} />
-          <Route path="/models" element={<ModelResults />} />
-          <Route path="/ssp" element={<SSPScenarios />} />
-          <Route path="/predict" element={<Predict />} />
-          <Route path="/province/:name" element={<ProvinceDetail />} />
-        </Routes>
+        <Page>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/map" element={<MapView />} />
+            <Route path="/historical" element={<HistoricalData />} />
+            <Route path="/provincial" element={<ProvincialAnalysis />} />
+            <Route path="/models" element={<ModelResults />} />
+            <Route path="/ssp" element={<SSPScenarios />} />
+            <Route path="/predict" element={<Predict />} />
+            <Route path="/province/:name" element={<ProvinceDetail />} />
+          </Routes>
+        </Page>
       </main>
 
       <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mt-auto">
